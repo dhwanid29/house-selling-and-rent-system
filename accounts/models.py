@@ -5,23 +5,26 @@ from phonenumber_field.modelfields import PhoneNumberField
 # Custom User Manager
 
 class UserManager(BaseUserManager):
-    def create_user(self, fname, lname, username, email, phone_number, address, password=None, password2=None):
+    def create_user(self, **kwargs):  # fname, lname, username, email, phone_number, address, profile_image, password=None, password2=None):
         """
         Creates and saves a User with the given email, name and password.
         """
-        if not email:
+        if not kwargs.get('email'):
             raise ValueError('Users must have an email address')
 
-        user = self.model(
-            fname=fname,
-            lname=lname,
-            username=username,
-            email=self.normalize_email(email),
-            phone_number=phone_number,
-            address=address,
-        )
+        # user = self.model(
+        #     fname=fname,
+        #     lname=lname,
+        #     username=username,
+        #     email=self.normalize_email(email),
+        #     phone_number=phone_number,
+        #     address=address,
+        #     profile_image=profile_image,
+        # )
+        kwargs.pop('password2', None)
+        user = self.model(**kwargs)
 
-        user.set_password(password)
+        user.set_password(kwargs.get('password'))
         user.save(using=self._db)
         return user
 
@@ -58,7 +61,7 @@ class User(AbstractBaseUser):
     )
     phone_number = PhoneNumberField()
     address = models.TextField(verbose_name='Address')
-    profile_image = models.ImageField(default='default.jpg', upload_to='uploads/')
+    profile_image = models.ImageField(default = 'default.jpg', upload_to='uploads/', null=True)
     is_seller = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
 

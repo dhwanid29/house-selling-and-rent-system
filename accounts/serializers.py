@@ -5,6 +5,7 @@ from phonenumber_field.formfields import PhoneNumberField
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    profile_image = serializers.ImageField(required=False)
     phone = PhoneNumberField()
 
     class Meta:

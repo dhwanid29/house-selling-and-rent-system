@@ -22,6 +22,7 @@ class UserRegistrationView(APIView):
     # renderer_classes = [UserRenderer]
 
     def post(self, request, format=None):
+        print("request.data", request.data, type(request.data))
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
