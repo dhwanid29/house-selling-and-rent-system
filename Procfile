@@ -1,3 +1,3 @@
-web: gunicorn house-selling-and-rent-system.wsgi
+web: gunicorn house_selling.wsgi
 
 
