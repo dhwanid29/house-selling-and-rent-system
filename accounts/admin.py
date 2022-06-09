@@ -32,3 +32,16 @@ class UserModelAdmin(BaseUserAdmin):
 
 # Now register the new UserModelAdmin...
 admin.site.register(User, UserModelAdmin)
+
+
+#
+# {
+# "fname": "heli",
+# "lname": "shah",
+# "username": "heli",
+# "email": "heli@gmail.com",
+# "password": "123456",
+# "password2": "123456",
+# "phone_number": "+91 8677778987",
+# "address": "gota"
+# }
