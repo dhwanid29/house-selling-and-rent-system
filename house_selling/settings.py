@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-$m#k72#2#jbiujhv7qs)_gf)92@v(91^lgg40mz2h)v-k=t6(p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://house-selling-and-rent-system.herokuapp.com/', 'http://127.0.0.1:8000/']
+ALLOWED_HOSTS = ['house-selling-and-rent-system.herokuapp.com', '127.0.0.1:8000']
 
 
 # Application definition
