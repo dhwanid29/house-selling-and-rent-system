@@ -14,7 +14,8 @@ def validate_password(password):
     if re.fullmatch(reg, password):
         return password
     else:
-        raise ValidationError("incorrect")
+        raise ValidationError("Invalid password. Password must contain atleast one uppercase alphabet, one lowercase "
+                              "alphabet, one digit, one special character and must be 8 to 20 characters in length.")
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
