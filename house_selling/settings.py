@@ -12,9 +12,9 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
-import django_heroku
 from dotenv import load_dotenv
-django_heroku.settings(locals())
+# import django_heroku
+# django_heroku.settings(locals())
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
