@@ -1,25 +1,37 @@
+import re
+
+from django.core import exceptions
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from accounts.models import User
-from phonenumber_field.formfields import PhoneNumberField
+import django.contrib.auth.password_validation as validators
+
+
+def validate_password(password):
+
+    reg = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#?&])[A-Za-z\d@$!#%*?&]{8,20}$"
+
+    if re.fullmatch(reg, password):
+        return password
+    else:
+        raise ValidationError("incorrect")
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    password = serializers.CharField(style={'input_type': 'password'}, write_only=True, validators=[validate_password])
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
-    profile_image = serializers.ImageField(required=False)
-    phone = PhoneNumberField()
 
     class Meta:
         model = User
-        fields=['fname', 'lname', 'username', 'email', 'password', 'password2', 'phone_number', 'address', 'profile_image']
-        # extra_kwargs={
-        #     'password':{'write_only': True}
-        # }
+        fields = ['fname', 'lname', 'username', 'email', 'password', 'password2', 'phone_number', 'address',
+                  'profile_image']
 
     def validate(self, attrs):
         password = attrs.get('password')
         password2 = attrs.get('password2')
+
         if password != password2:
-            raise serializers.ValidationError("Password and Confirm Password doesn't match!")
+            raise serializers.ValidationError("Password and Confirm Password doesn't match")
         return attrs
 
     def create(self, validated_data):
@@ -32,7 +44,6 @@ class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'password']
-
 
 # class UserProfileSerializer(serializers.ModelSerializer):
 #     class Meta:
