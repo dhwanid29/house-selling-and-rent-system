@@ -57,7 +57,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
 class UserChangePasswordSerializer(serializers.Serializer):
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, validators=[validate_password])
-    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=Tre)
+    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
     class Meta:
         fields = ['password', 'password2']
