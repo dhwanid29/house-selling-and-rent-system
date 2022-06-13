@@ -1,7 +1,9 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, AbstractUser
 from phonenumber_field.modelfields import PhoneNumberField
+
+
 
 
 def validate_username(username):
@@ -70,10 +72,6 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-
-
-
-# Custom User Model
 
 class User(AbstractBaseUser):
     fname = models.CharField(max_length=200, verbose_name='First Name', validators=[validate_name])

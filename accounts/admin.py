@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
+
 class UserModelAdmin(BaseUserAdmin):
     list_display = ('id', 'username', 'fname', 'lname', 'email', 'phone_number', 'address', 'profile_image', 'is_admin', 'profile_image')
     list_filter = ('is_admin',)
@@ -23,16 +24,3 @@ class UserModelAdmin(BaseUserAdmin):
 
 # Now register the new UserModelAdmin...
 admin.site.register(User, UserModelAdmin)
-
-
-#
-# {
-# "fname": "heli",
-# "lname": "shah",
-# "username": "heli",
-# "email": "heli@gmail.com",
-# "password": "123456",
-# "password2": "123456",
-# "phone_number": "+91 8677778987",
-# "address": "gota"
-# }
