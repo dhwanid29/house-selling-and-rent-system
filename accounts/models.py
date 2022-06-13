@@ -39,7 +39,7 @@ def validate_name(name):
 # Custom User Manager
 
 class UserManager(BaseUserManager):
-    def create_user(self, **kwargs):  # fname, lname, username, email, phone_number, address, profile_image, password=None, password2=None):
+    def create_user(self, **kwargs):  # first_name, last_name, username, email, phone_number, address, profile_image, password=None, password2=None):
         """
         Creates and saves a User with the given email, name and password.
         """
@@ -53,14 +53,14 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, fname, lname, username, phone_number, address, password=None):
+    def create_superuser(self, email, first_name, last_name, username, phone_number, address, password=None):
         """
         Creates and saves a superuser with the given email, name and password.
         """
         user = self.create_user(
             email=email,
-            fname=fname,
-            lname=lname,
+            first_name=first_name,
+            last_name=last_name,
             username=username,
             phone_number=phone_number,
             address=address,
@@ -76,8 +76,8 @@ class UserManager(BaseUserManager):
 # Custom User Model
 
 class User(AbstractBaseUser):
-    fname = models.CharField(max_length=200, verbose_name='First Name', validators=[validate_name])
-    lname = models.CharField(max_length=200, verbose_name='Last Name', validators=[validate_name])
+    first_name = models.CharField(max_length=200, verbose_name='First Name', validators=[validate_name])
+    last_name = models.CharField(max_length=200, verbose_name='Last Name', validators=[validate_name])
     username = models.CharField(max_length=255, unique=True, verbose_name='Username', validators=[validate_username])
     email = models.EmailField(
         verbose_name='Email',
@@ -93,7 +93,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['fname', 'lname', 'username', 'phone_number', 'address']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'username', 'phone_number', 'address']
 
     def __str__(self):
         return self.email

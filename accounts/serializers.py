@@ -26,7 +26,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['fname', 'lname', 'username', 'email', 'password', 'password2', 'phone_number', 'address',
+        fields = ['first_name', 'last_name', 'username', 'email', 'password', 'password2', 'phone_number', 'address',
                   'profile_image']
 
     def validate(self, attrs):
@@ -49,10 +49,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
         fields = ['email', 'password']
 
 
-# class UserProfileSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['id', 'email', 'name']
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'profile_image']
 
 
 class UserChangePasswordSerializer(serializers.Serializer):
