@@ -40,8 +40,8 @@ def validate_name(name):
 # Custom User Model
 
 class User(AbstractBaseUser):
-    fname = models.CharField(max_length=200, verbose_name='First Name', validators=[validate_name])
-    lname = models.CharField(max_length=200, verbose_name='Last Name', validators=[validate_name])
+    first_name = models.CharField(max_length=200, verbose_name='First Name', validators=[validate_name])
+    last_name = models.CharField(max_length=200, verbose_name='Last Name', validators=[validate_name])
     username = models.CharField(max_length=255, unique=True, verbose_name='Username', validators=[validate_username])
     email = models.EmailField(
         verbose_name='Email',
@@ -57,7 +57,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['fname', 'lname', 'username', 'phone_number', 'address']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'username', 'phone_number', 'address']
 
     def __str__(self):
         return self.email
