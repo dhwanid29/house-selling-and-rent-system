@@ -184,7 +184,7 @@ var requirejs, require, define;
         return name;
     }
 
-    function makeRequire(relName, forceSync) {
+    function makeRequire(relast_name, forceSync) {
         return function () {
             //A version of a require function that passes a moduleName
             //value for items that may need to
@@ -197,13 +197,13 @@ var requirejs, require, define;
             if (typeof args[0] !== 'string' && args.length === 1) {
                 args.push(null);
             }
-            return req.apply(undef, args.concat([relName, forceSync]));
+            return req.apply(undef, args.concat([relast_name, forceSync]));
         };
     }
 
-    function makeNormalize(relName) {
+    function makeNormalize(relast_name) {
         return function (name) {
-            return normalize(name, relName);
+            return normalize(name, relast_name);
         };
     }
 

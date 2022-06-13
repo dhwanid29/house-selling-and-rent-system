@@ -7,7 +7,7 @@ from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeErr
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
-from accounts.utils import Util
+from accounts.utils import EmailSend
 
 
 def validate_password(password):
@@ -26,7 +26,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['fname', 'lname', 'username', 'email', 'password', 'password2', 'phone_number', 'address',
+        fields = ['first_name', 'last_name', 'username', 'email', 'password', 'password2', 'phone_number', 'address',
                   'profile_image']
 
     def validate(self, attrs):
@@ -96,7 +96,7 @@ class SendPasswordResetEmailSerializers(serializers.Serializer):
                 'body': body,
                 'to_email': user.email
             }
-            Util.send_email(data)
+            EmailSend.send_email(data)
             return attrs
         else:
             raise ValidationError('You are not a registered user.')
