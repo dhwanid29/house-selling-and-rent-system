@@ -3,41 +3,11 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from phonenumber_field.modelfields import PhoneNumberField
 from accounts.manager import UserManager
-
-
-def validate_username(username):
-    """
-    Function to validate the username
-    :param username: takes in username and validates it
-    :return: validated username
-    """
-    if len(username) < 3:
-        raise ValidationError("Username too short.Please enter a username of atleast 3 characters.")
-    elif len(username) > 30:
-        raise ValidationError("Username too long.Please enter a username of not greater than 30 characters.")
-    elif not username.islower():
-        raise ValidationError("Username should consists of lower case alphabets only.")
-    elif " " in username:
-        raise ValidationError("Username cannot contain spaces.")
-    else:
-        return True
-
-
-def validate_name(name):
-    """
-    Function to validate the first name and last name of the user
-    :param name: takes in the first name or last name and validates it
-    :return: validated name
-    """
-    if " " in name:
-        raise ValidationError(f"{name} cannot contain spaces.")
-    elif name.isalpha():
-        return name
-    else:
-        raise ValidationError(f"{name} is invalid. Enter a valid name")
+from accounts.validations import validate_name, validate_username
 
 
 # Custom User Model
+
 
 class User(AbstractBaseUser):
     first_name = models.CharField(max_length=200, verbose_name='First Name', validators=[validate_name])

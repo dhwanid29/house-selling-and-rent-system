@@ -6,18 +6,7 @@ from accounts.models import User
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-
 from accounts.utils import EmailSend
-
-
-def validate_password(password):
-    reg = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#?&])[A-Za-z\d@$!#%*?&]{8,20}$"
-
-    if re.fullmatch(reg, password):
-        return password
-    else:
-        raise ValidationError("Invalid password. Password must contain atleast one uppercase alphabet, one lowercase "
-                              "alphabet, one digit, one special character and must be 8 to 20 characters in length.")
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
