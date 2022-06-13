@@ -86,7 +86,7 @@ class User(AbstractBaseUser):
     )
     phone_number = PhoneNumberField(unique=True)
     address = models.TextField(verbose_name='Address')
-    profile_image = models.ImageField(default = 'default.jpg', upload_to='uploads/', null=True)
+    profile_image = models.ImageField(default = 'default.jpg', upload_to='profile_images/', null=True)
     is_seller = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
 
