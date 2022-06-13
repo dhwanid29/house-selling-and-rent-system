@@ -1,6 +1,9 @@
 import re
 from rest_framework.exceptions import ValidationError
 
+from constants import password_validation_error, username_short_error, username_long_error, only_lowercase, \
+    no_spaces_allowed, invalid_name, name_no_spaces_allowed
+
 
 def validate_password(password):
     reg = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#?&])[A-Za-z\d@$!#%*?&]{8,20}$"
@@ -8,8 +11,7 @@ def validate_password(password):
     if re.fullmatch(reg, password):
         return password
     else:
-        raise ValidationError("Invalid password. Password must contain atleast one uppercase alphabet, one lowercase "
-                              "alphabet, one digit, one special character and must be 8 to 20 characters in length.")
+        raise ValidationError(password_validation_error)
 
 
 def validate_username(username):
@@ -19,13 +21,13 @@ def validate_username(username):
     :return: validated username
     """
     if len(username) < 3:
-        raise ValidationError("Username too short.Please enter a username of atleast 3 characters.")
+        raise ValidationError(username_short_error)
     elif len(username) > 30:
-        raise ValidationError("Username too long.Please enter a username of not greater than 30 characters.")
+        raise ValidationError(username_long_error)
     elif not username.islower():
-        raise ValidationError("Username should consists of lower case alphabets only.")
+        raise ValidationError(only_lowercase)
     elif " " in username:
-        raise ValidationError("Username cannot contain spaces.")
+        raise ValidationError(no_spaces_allowed)
     else:
         return True
 
@@ -37,8 +39,8 @@ def validate_name(name):
     :return: validated name
     """
     if " " in name:
-        raise ValidationError(f"{name} cannot contain spaces.")
+        raise ValidationError(name_no_spaces_allowed)
     elif name.isalpha():
         return name
     else:
-        raise ValidationError(f"{name} is invalid. Enter a valid name")
+        raise ValidationError(invalid_name)

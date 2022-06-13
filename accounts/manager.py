@@ -1,15 +1,16 @@
 from django.contrib.auth.models import BaseUserManager
+from constants import email_required
 
 # Custom User Manager
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, **kwargs):  # (first_name, last_name, username, email, phone_number, address, profile_image, password=None, password2=None):
+    def create_user(self, **kwargs):
         """
         Creates and saves a User with the given email, name and password.
         """
         if not kwargs.get('email'):
-            raise ValueError('Users must have an email address')
+            raise ValueError(email_required)
 
         kwargs.pop('password2', None)
         user = self.model(**kwargs)
