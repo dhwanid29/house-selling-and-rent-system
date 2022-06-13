@@ -1,9 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, AbstractUser
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from phonenumber_field.modelfields import PhoneNumberField
-
-
+from accounts.manager import UserManager
 
 
 def validate_username(username):
@@ -38,40 +37,7 @@ def validate_name(name):
         raise ValidationError(f"{name} is invalid. Enter a valid name")
 
 
-# Custom User Manager
-
-class UserManager(BaseUserManager):
-    def create_user(self, **kwargs):  # fname, lname, username, email, phone_number, address, profile_image, password=None, password2=None):
-        """
-        Creates and saves a User with the given email, name and password.
-        """
-        if not kwargs.get('email'):
-            raise ValueError('Users must have an email address')
-
-        kwargs.pop('password2', None)
-        user = self.model(**kwargs)
-
-        user.set_password(kwargs.get('password'))
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, fname, lname, username, phone_number, address, password=None):
-        """
-        Creates and saves a superuser with the given email, name and password.
-        """
-        user = self.create_user(
-            email=email,
-            fname=fname,
-            lname=lname,
-            username=username,
-            phone_number=phone_number,
-            address=address,
-            password=password,
-        )
-        user.is_admin = True
-        user.save(using=self._db)
-        return user
-
+# Custom User Model
 
 class User(AbstractBaseUser):
     fname = models.CharField(max_length=200, verbose_name='First Name', validators=[validate_name])
