@@ -1,14 +1,16 @@
 import re
 
+from django.contrib.auth.hashers import check_password
 from django.core import exceptions
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from accounts.models import User
-import django.contrib.auth.password_validation as validators
+from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 
 def validate_password(password):
-
     reg = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#?&])[A-Za-z\d@$!#%*?&]{8,20}$"
 
     if re.fullmatch(reg, password):
@@ -46,6 +48,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'password']
 
+
 # class UserProfileSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = User
@@ -53,6 +56,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
 
 class UserChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, validators=[validate_password])
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
@@ -60,11 +64,18 @@ class UserChangePasswordSerializer(serializers.Serializer):
         fields = ['password', 'password2']
 
     def validate(self, attrs):
+        old_password = attrs.get('old_password')
         password = attrs.get('password')
         password2 = attrs.get('password2')
         user = self.context.get('user')
+
+        if not check_password(old_password, user.password):
+            raise serializers.ValidationError("Current password is incorrect.")
+
         if password != password2:
             raise serializers.ValidationError("Password and Confirm password didn't matched.")
+
         user.set_password(password)
         user.save()
         return attrs
+
