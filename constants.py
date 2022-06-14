@@ -5,7 +5,7 @@ if settings.DEBUG:
 else:
     host_url = "https://house-selling-and-rent-system.herokuapp.com/api/user"
 
-# serializers.py messages
+# serializer messages
 
 password_do_not_match = "Password and Confirm Password doesn't match"
 email_body = "Click Following Link to Reset Your Password "
@@ -13,7 +13,7 @@ email_subject = "Reset Your Password"
 not_registered = "You are not a registered user."
 invalid_token = "Token is not Valid or Expired."
 
-# views.py messages
+# views messages
 
 user_created = "User Created Successfully!"
 logged_in = "Login Successfully!"
@@ -22,7 +22,7 @@ password_changed = "Password Changed Successfully!"
 password_reset_link = "Password Reset link send. Please check your Email"
 password_reset_successful = "Password Reset Successfully"
 
-# validations.py messages
+# validations messages
 
 password_validation_error = "Invalid password. Password must contain atleast one uppercase alphabet, one lowercase alphabet, one digit, one special character and must be 8 to 20 characters in length."
 username_short_error = "Username too short.Please enter a username of atleast 3 characters."
@@ -32,6 +32,6 @@ no_spaces_allowed = "Username cannot contain spaces."
 name_no_spaces_allowed = "Name cannot contain spaces."
 invalid_name = "This name is invalid. Enter a valid name"
 
-# managers.py
+# managers messages
 
 email_required = 'Users must have an email address'

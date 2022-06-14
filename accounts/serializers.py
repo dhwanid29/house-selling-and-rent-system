@@ -1,5 +1,3 @@
-import re
-from django.core import exceptions
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from accounts.models import User
@@ -12,6 +10,9 @@ from constants import password_do_not_match, host_url, email_body, email_subject
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for User Registration
+    """
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, validators=[validate_password])
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
@@ -33,6 +34,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(serializers.ModelSerializer):
+    """
+    Serializer for User Login
+    """
     email = serializers.EmailField(max_length=255)
 
     class Meta:
@@ -41,12 +45,18 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for User Profile View
+    """
     class Meta:
         model = User
         fields = ['email', 'first_name', 'last_name', 'profile_image']
 
 
 class UserChangePasswordSerializer(serializers.Serializer):
+    """
+    Serializer for User Change Password
+    """
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, validators=[validate_password])
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
@@ -65,6 +75,9 @@ class UserChangePasswordSerializer(serializers.Serializer):
 
 
 class SendPasswordResetEmailSerializers(serializers.Serializer):
+    """
+    Serializer to get email from user and send password reset link to user via mail
+    """
     email = serializers.EmailField(max_length=255)
 
     class Meta:
@@ -94,6 +107,9 @@ class SendPasswordResetEmailSerializers(serializers.Serializer):
 
 
 class UserPasswordResetSerializer(serializers.Serializer):
+    """
+    Serializer to Reset Password
+    """
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, validators=[validate_password])
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 

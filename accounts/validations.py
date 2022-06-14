@@ -6,6 +6,11 @@ from constants import password_validation_error, username_short_error, username_
 
 
 def validate_password(password):
+    """
+    Function to validate user password
+    :param password: takes in password and validates it
+    :return: validated password
+    """
     reg = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#?&])[A-Za-z\d@$!#%*?&]{8,20}$"
 
     if re.fullmatch(reg, password):

@@ -3,6 +3,9 @@ from accounts.models import User
 
 
 class Amenities(models.Model):
+    """
+    Model to create Amenities Table
+    """
     name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -10,6 +13,9 @@ class Amenities(models.Model):
 
 
 class HouseReview(models.Model):
+    """
+    Model to create HouseReview Table
+    """
     review = models.TextField()
 
     def __str__(self):
@@ -30,6 +36,9 @@ PROJECT_STATUS_CHOICES = (
 
 
 class House(models.Model):
+    """
+    Model to create House Table
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     amenities = models.ManyToManyField(Amenities)
     residence_name = models.CharField(max_length=255)
@@ -50,6 +59,9 @@ class House(models.Model):
 
 
 class HouseImages(models.Model):
+    """
+    Model to create HouseImages Table
+    """
     house = models.ForeignKey(House, on_delete=models.CASCADE)
     house_image = models.ImageField(upload_to='house_images/')
 

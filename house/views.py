@@ -7,16 +7,19 @@ from house.models import House, Amenities
 from house.serializers import HouseSerializer, AmenitiesSerializer
 
 
-# HouseReviewSerializer
-
-
 class AddAmenities(generics.CreateAPIView):
+    """
+    View to Add Amenities
+    """
     serializer_class = AmenitiesSerializer
     permission_classes = [IsAdminUser]
 
 
 class AmenitiesView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
                     mixins.UpdateModelMixin):
+    """
+    View to get, update and delete amenities
+    """
     serializer_class = AmenitiesSerializer
     queryset = Amenities.objects.all()
     lookup_field = 'id'
@@ -39,6 +42,9 @@ class AmenitiesView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.D
 
 class AddHouse(generics.GenericAPIView, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                mixins.RetrieveModelMixin):
+    """
+    View to add House Details
+    """
     serializer_class = HouseSerializer
     permission_classes = [IsAuthenticated]
 
@@ -64,6 +70,9 @@ class AddHouse(generics.GenericAPIView, mixins.CreateModelMixin, mixins.UpdateMo
 
 
 class HouseView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, mixins.UpdateModelMixin):
+    """
+    View to get, update, delete House Details
+    """
     serializer_class = HouseSerializer
     queryset = House.objects.all()
     lookup_field = 'id'

@@ -10,6 +10,9 @@ from accounts.validations import validate_name, validate_username
 
 
 class User(AbstractBaseUser):
+    """
+    User Model
+    """
     first_name = models.CharField(max_length=200, verbose_name='First Name', validators=[validate_name])
     last_name = models.CharField(max_length=200, verbose_name='Last Name', validators=[validate_name])
     username = models.CharField(max_length=255, unique=True, verbose_name='Username', validators=[validate_username])

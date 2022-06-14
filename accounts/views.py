@@ -15,8 +15,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 # Generate token manually
 def get_tokens_for_user(user):
+    """
+    Function to get token of the authenticated user
+    :param user: takes in user login detail (email)
+    :return: two types of token i.e refresh token and access token
+    """
     refresh = RefreshToken.for_user(user)
-
     return {
         'refresh': str(refresh),
         'access': str(refresh.access_token),
@@ -24,6 +28,9 @@ def get_tokens_for_user(user):
 
 
 class UserRegistrationView(APIView):
+    """
+    View for User Registration
+    """
 
     def post(self, request):
         print("request.data", request.data, type(request.data))
@@ -36,6 +43,9 @@ class UserRegistrationView(APIView):
 
 
 class UserLoginView(APIView):
+    """
+    View for User Login View
+    """
 
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
@@ -51,6 +61,9 @@ class UserLoginView(APIView):
 
 
 class UserProfileView(APIView):
+    """
+    User Profile View
+    """
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
 
@@ -81,6 +94,9 @@ class UserProfileView(APIView):
 
 
 class UserChangePasswordView(APIView):
+    """
+    User Change Password View
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -91,7 +107,9 @@ class UserChangePasswordView(APIView):
 
 
 class SendPasswordResetEmailView(APIView):
-
+    """
+    View to get email from user and send reset password link to that mail
+    """
     def post(self, request):
         serializer = SendPasswordResetEmailSerializers(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -100,6 +118,9 @@ class SendPasswordResetEmailView(APIView):
 
 
 class UserPasswordResetView(APIView):
+    """
+    View to reset user password
+    """
 
     def post(self, request, uid, token):
         serializer = UserPasswordResetSerializer(data=request.data, context={'uid':uid, 'token':token})

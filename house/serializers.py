@@ -3,12 +3,18 @@ from house.models import House, Amenities, HouseReview
 
 
 class AmenitiesSerializer(serializers.ModelSerializer):
+    """
+    Serializer for amenities
+    """
     class Meta:
         model = Amenities
         fields = '__all__'
 
 
 class HouseSerializer(serializers.ModelSerializer):
+    """
+    Serializer for House
+    """
     class Meta:
         model = House
         fields = '__all__'
