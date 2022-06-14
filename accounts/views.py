@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, logout
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -54,26 +54,28 @@ class UserProfileView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
 
-    def get_object(self, id):
+    def get_object(self, request):
         try:
-            return User.objects.get(id=id)
+            return User.objects.get(id=request.user.id)
+
         except User.DoesNotExist:
             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request):
-        serializer = UserProfileSerializer(request.user)
+        user = self.get_object(request)
+        serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, id):
-        article = self.get_object(id)
-        serializer = UserProfileSerializer(article, data=request.data)
+    def put(self, request):
+        user = self.get_object(request)
+        serializer = UserProfileSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, id):
-        user = self.get_object(id)
+    def delete(self, request):
+        user = self.get_object(request)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
