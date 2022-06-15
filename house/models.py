@@ -72,3 +72,15 @@ class HouseReview(models.Model):
 
     def __str__(self):
         return self.review
+
+
+class SiteReview(models.Model):
+    """
+    Model to create HouseReview Table
+    """
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+    review = models.TextField()
+    created_date = models.DateField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return self.review

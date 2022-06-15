@@ -3,8 +3,9 @@ from rest_framework import generics, mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from house.models import House, Amenities, HouseReview
-from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer
+from house.models import House, Amenities, HouseReview, SiteReview
+from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
+    SiteReviewSerializer, SiteReviewUpdateSerializer
 
 
 class AddAmenities(generics.CreateAPIView):
@@ -82,6 +83,34 @@ class HouseView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.Destr
 
     def delete(self, request, id):
         return self.destroy(request, id)
+
+
+class SiteReviewViewSet(viewsets.ModelViewSet):
+    """
+    View to get, update, delete Site Review
+    """
+    serializer_class = SiteReviewSerializer
+    queryset = SiteReview.objects.all()
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+    def create(self, request, *args, **kwargs):
+        request.data['user'] = request.user.id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+            instance = self.get_object()
+            if instance.user.id == request.user.id:
+                serializer = SiteReviewUpdateSerializer(instance, data=request.data)
+                serializer.is_valid(raise_exception=True)
+                self.perform_update(serializer)
+
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({'msg': 'You do not have access to this update this review.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class HouseReviewViewSet(viewsets.ModelViewSet):
