@@ -12,16 +12,6 @@ class Amenities(models.Model):
         return self.name
 
 
-class HouseReview(models.Model):
-    """
-    Model to create HouseReview Table
-    """
-    review = models.TextField()
-
-    def __str__(self):
-        return self.review
-
-
 POSSESSION_CHOICES = (
     ("Ready to Take", "Ready to Take"),
     ("Within 3 months", "Within 3 months"),
@@ -63,7 +53,22 @@ class HouseImages(models.Model):
     Model to create HouseImages Table
     """
     house = models.ForeignKey(House, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     house_image = models.ImageField(upload_to='house_images/')
+    created_date = models.DateField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.house_image
+
+
+class HouseReview(models.Model):
+    """
+    Model to create HouseReview Table
+    """
+    house = models.ForeignKey(House, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+    review = models.TextField()
+    created_date = models.DateField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return self.review
