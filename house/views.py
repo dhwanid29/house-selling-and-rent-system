@@ -1,12 +1,15 @@
 from django.http import HttpResponse
+from django_filters import FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, mixins, status, viewsets
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from constants import NO_ACCESS_UPDATE_REVIEW, NO_ACCESS_UPDATE_HOUSE_IMAGE
 from house.models import House, Amenities, HouseReview, SiteReview, HouseImages
 from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
-    SiteReviewSerializer, SiteReviewUpdateSerializer
+    SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer
 
 
 class AddAmenities(generics.CreateAPIView):
@@ -37,15 +40,20 @@ class AmenitiesView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.D
         return self.destroy(request, id)
 
 
-class AddHouse(generics.GenericAPIView, mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-               mixins.RetrieveModelMixin):
+class HouseViewSet(viewsets.ModelViewSet):
     """
-    View to add House Details
+    View to get, update, delete House Details
     """
     serializer_class = HouseSerializer
+    queryset = House.objects.all()
     permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['amenities', 'no_of_bedrooms']
+    search_fields = ['residence_name', 'city']
+    ordering_fields = '__all__'
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -53,37 +61,16 @@ class AddHouse(generics.GenericAPIView, mixins.CreateModelMixin, mixins.UpdateMo
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def get(self, request, id=None):
-        if id:
-            return self.retrieve(request)
-        else:
-            return HttpResponse('invalid')
-
-    def put(self, request, id=None):
-        return self.update(request, id)
-
-    def delete(self, request, id):
-        return self.destroy(request, id)
-
-
-class HouseView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, mixins.UpdateModelMixin):
-    """
-    View to get, update, delete House Details
-    """
-    serializer_class = HouseSerializer
-    queryset = House.objects.all()
-    lookup_field = 'id'
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, id):
-        return self.retrieve(request, id)
-
-    def put(self, request, id=None):
+    def update(self, request, *args, **kwargs):
         request.data['user'] = request.user.id
-        return self.update(request, id)
+        instance = self.get_object()
+        if instance.user.id == request.user.id:
+            serializer = HouseSerializer(instance, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
 
-    def delete(self, request, id):
-        return self.destroy(request, id)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'msg': NO_ACCESS_UPDATE_REVIEW}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SiteReviewViewSet(viewsets.ModelViewSet):
