@@ -7,7 +7,8 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from accounts.utils import EmailSend
 from accounts.validations import validate_password
-from constants import password_do_not_match, host_url, email_body, email_subject, not_registered, invalid_token
+from constants import password_do_not_match, host_url, email_body, email_subject, not_registered, invalid_token, \
+    CURRENT_PASSWORD_CHECK
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
