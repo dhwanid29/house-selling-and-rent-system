@@ -7,7 +7,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from accounts.utils import EmailSend
 from accounts.validations import validate_password
-from constants import password_do_not_match, host_url, email_body, email_subject, not_registered, invalid_token, \
+from constants import PASSWORD_DO_NOT_MATCH, HOST_URL, EMAIL_BODY, EMAIL_SUBJECT, NOT_REGISTERED, INVALID_TOKEN, \
     CURRENT_PASSWORD_CHECK
 
 
@@ -28,7 +28,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         password2 = attrs.get('password2')
 
         if password != password2:
-            raise serializers.ValidationError(password_do_not_match)
+            raise serializers.ValidationError(PASSWORD_DO_NOT_MATCH)
         return attrs
 
     def create(self, validated_data):
@@ -76,7 +76,7 @@ class UserChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError(CURRENT_PASSWORD_CHECK)
 
         if password != password2:
-            raise serializers.ValidationError(password_do_not_match)
+            raise serializers.ValidationError(PASSWORD_DO_NOT_MATCH)
         user.set_password(password)
         user.save()
         return attrs
@@ -99,19 +99,19 @@ class SendPasswordResetEmailSerializers(serializers.Serializer):
             print('Encoded UID', uid)
             token = PasswordResetTokenGenerator().make_token(user)
             print('Password Reset Token', token)
-            link = host_url + '/reset-password/' + uid + '/' + token
+            link = HOST_URL + '/reset-password/' + uid + '/' + token
             print('Password Reset Link', link)
             # Send Mail
-            body = email_body + link
+            body = EMAIL_BODY + link
             data = {
-                'subject': email_subject,
+                'subject': EMAIL_SUBJECT,
                 'body': body,
                 'to_email': user.email
             }
             EmailSend.send_email(data)
             return attrs
         else:
-            raise ValidationError(not_registered)
+            raise ValidationError(NOT_REGISTERED)
 
 
 class UserPasswordResetSerializer(serializers.Serializer):
@@ -131,14 +131,14 @@ class UserPasswordResetSerializer(serializers.Serializer):
             uid = self.context.get('uid')
             token = self.context.get('token')
             if password != password2:
-                raise serializers.ValidationError(password_do_not_match)
+                raise serializers.ValidationError(PASSWORD_DO_NOT_MATCH)
             id = smart_str(urlsafe_base64_decode(uid))
             user = User.objects.get(id=id)
             if not PasswordResetTokenGenerator().check_token(user, token):
-                raise ValidationError(invalid_token)
+                raise ValidationError(INVALID_TOKEN)
             user.set_password(password)
             user.save()
             return attrs
         except DjangoUnicodeDecodeError as identifier:
             PasswordResetTokenGenerator().check_token(user, token)
-            raise ValidationError(invalid_token)
+            raise ValidationError(INVALID_TOKEN)
