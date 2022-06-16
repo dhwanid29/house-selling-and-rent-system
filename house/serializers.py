@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from house.models import House, Amenities, HouseReview, SiteReview
+from house.models import House, Amenities, HouseReview, SiteReview, HouseImages
 
 
 class AmenitiesSerializer(serializers.ModelSerializer):
@@ -29,10 +29,20 @@ class SiteReviewUpdateSerializer(serializers.ModelSerializer):
         fields = ['review']
 
 
+class HouseImageSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Site Review Update
+    """
+    class Meta:
+        model = HouseImages
+        fields = ['house', 'user', 'house_image']
+
+
 class HouseSerializer(serializers.ModelSerializer):
     """
     Serializer for House
     """
+
     class Meta:
         model = House
         fields = '__all__'

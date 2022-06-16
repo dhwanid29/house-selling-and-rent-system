@@ -2,10 +2,9 @@ from django.http import HttpResponse
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-
-from house.models import House, Amenities, HouseReview, SiteReview
+from house.models import House, Amenities, HouseReview, SiteReview, HouseImages
 from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
-    SiteReviewSerializer, SiteReviewUpdateSerializer
+    SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer
 
 
 class AddAmenities(generics.CreateAPIView):

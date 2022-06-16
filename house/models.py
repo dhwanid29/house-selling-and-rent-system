@@ -52,7 +52,7 @@ class HouseImages(models.Model):
     """
     Model to create HouseImages Table
     """
-    house = models.ForeignKey(House, on_delete=models.CASCADE)
+    house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='house_images')
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     house_image = models.ImageField(upload_to='house_images/')
     created_date = models.DateField(auto_now_add=True, null=True)

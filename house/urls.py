@@ -1,6 +1,5 @@
 from django.urls import path
-from house.views import HouseView, AddHouse, AmenitiesView, AddAmenities, HouseReviewViewSet, SiteReviewViewSet
-
+from house.views import AmenitiesView, AddAmenities, HouseReviewViewSet, SiteReviewViewSet, AddHouse, HouseView
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
