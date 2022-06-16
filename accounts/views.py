@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from constants import user_created, logged_in, invalid_email_or_password, password_changed, password_reset_link, \
-    password_reset_successful
+from constants import USER_CREATED, LOGGED_IN, INVALID_EMAIL_OR_PASSWORD, PASSWORD_CHANGED, PASSWORD_RESET_LINK, \
+    PASSWORD_RESET_SUCCESSFUL
 from .models import User
 from .renderers import UserRenderer
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserChangePasswordSerializer, SendPasswordResetEmailSerializers,\
@@ -38,7 +38,7 @@ class UserRegistrationView(APIView):
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
             token = get_tokens_for_user(user)
-            return Response({'token': token, 'msg': user_created}, status=status.HTTP_201_CREATED)
+            return Response({'token': token, 'msg': USER_CREATED}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -55,9 +55,9 @@ class UserLoginView(APIView):
             user = authenticate(email=email, password=password)
             if user is not None:
                 token = get_tokens_for_user(user)
-                return Response({'token': token, 'msg': logged_in}, status=status.HTTP_200_OK)
+                return Response({'token': token, 'msg': LOGGED_IN}, status=status.HTTP_200_OK)
             else:
-                return Response({'errors': {'non_field_errors': [invalid_email_or_password]}}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'errors': {'non_field_errors': [INVALID_EMAIL_OR_PASSWORD]}}, status=status.HTTP_404_NOT_FOUND)
 
 
 class UserProfileView(APIView):
@@ -103,7 +103,7 @@ class UserChangePasswordView(APIView):
 
         serializer = UserChangePasswordSerializer(data=request.data, context={'user': request.user})
         if serializer.is_valid(raise_exception=True):
-            return Response({'msg': password_changed}, status=status.HTTP_200_OK)
+            return Response({'msg': PASSWORD_CHANGED}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -114,7 +114,7 @@ class SendPasswordResetEmailView(APIView):
     def post(self, request):
         serializer = SendPasswordResetEmailSerializers(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            return Response({'msg': password_reset_link}, status=status.HTTP_200_OK)
+            return Response({'msg': PASSWORD_RESET_LINK}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -126,5 +126,5 @@ class UserPasswordResetView(APIView):
     def post(self, request, uid, token):
         serializer = UserPasswordResetSerializer(data=request.data, context={'uid':uid, 'token':token})
         if serializer.is_valid(raise_exception=True):
-            return Response({'msg': password_reset_successful}, status=status.HTTP_200_OK)
+            return Response({'msg': PASSWORD_RESET_SUCCESSFUL}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

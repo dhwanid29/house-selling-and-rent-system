@@ -1,8 +1,8 @@
 import re
 from rest_framework.exceptions import ValidationError
 
-from constants import password_validation_error, username_short_error, username_long_error, only_lowercase, \
-    no_spaces_allowed, invalid_name, name_no_spaces_allowed
+from constants import PASSWORD_VALIDATION_ERROR, USERNAME_SHORT_ERROR, USERNAME_LONG_ERROR, ONLY_LOWERCASE, \
+    NO_SPACES_ALLOWED, INVALID_NAME, NAME_NO_SPACES_ALLOWED
 
 
 def validate_password(password):
@@ -16,7 +16,7 @@ def validate_password(password):
     if re.fullmatch(reg, password):
         return password
     else:
-        raise ValidationError(password_validation_error)
+        raise ValidationError(PASSWORD_VALIDATION_ERROR)
 
 
 def validate_username(username):
@@ -26,13 +26,13 @@ def validate_username(username):
     :return: validated username
     """
     if len(username) < 3:
-        raise ValidationError(username_short_error)
+        raise ValidationError(USERNAME_SHORT_ERROR)
     elif len(username) > 30:
-        raise ValidationError(username_long_error)
+        raise ValidationError(USERNAME_LONG_ERROR)
     elif not username.islower():
-        raise ValidationError(only_lowercase)
+        raise ValidationError(ONLY_LOWERCASE)
     elif " " in username:
-        raise ValidationError(no_spaces_allowed)
+        raise ValidationError(NO_SPACES_ALLOWED)
     else:
         return True
 
@@ -44,8 +44,8 @@ def validate_name(name):
     :return: validated name
     """
     if " " in name:
-        raise ValidationError(name_no_spaces_allowed)
+        raise ValidationError(NAME_NO_SPACES_ALLOWED)
     elif name.isalpha():
         return name
     else:
-        raise ValidationError(invalid_name)
+        raise ValidationError(INVALID_NAME)

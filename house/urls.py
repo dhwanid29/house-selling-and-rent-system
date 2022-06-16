@@ -1,10 +1,13 @@
 from django.urls import path
-from house.views import AmenitiesView, AddAmenities, HouseReviewViewSet, SiteReviewViewSet, AddHouse, HouseView
+from house.views import HouseView, AddHouse, AmenitiesView, AddAmenities, HouseReviewViewSet, SiteReviewViewSet, \
+    HouseImageViewSet
+
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register('house_review', HouseReviewViewSet, basename='house_review'),
-router.register('site_review', SiteReviewViewSet, basename='site_review')
+router.register('site_review', SiteReviewViewSet, basename='site_review'),
+router.register('house_images', HouseImageViewSet, basename='house_images')
 
 urlpatterns = [
     path('add_house/', AddHouse.as_view(), name='add_house'),

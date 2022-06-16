@@ -48,6 +48,15 @@ class HouseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class HouseImageSerializer(serializers.ModelSerializer):
+    """
+    Serializer for House Images
+    """
+    class Meta:
+        model = HouseImages
+        fields = '__all__'
+
+
 class HouseReviewUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer for House Review Update
@@ -64,12 +73,3 @@ class HouseReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = HouseReview
         fields = '__all__'
-
-    def validate(self, attrs):
-        house = attrs.get('house')
-        user = attrs.get('user')
-        if self.instance and house:
-            raise serializers.ValidationError("House is immutable once set.")
-        if self.instance and user:
-            raise serializers.ValidationError("User is immutable once set.")
-        return attrs
