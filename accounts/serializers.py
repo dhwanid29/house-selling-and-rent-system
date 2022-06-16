@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from accounts.models import User
@@ -57,6 +58,7 @@ class UserChangePasswordSerializer(serializers.Serializer):
     """
     Serializer for User Change Password
     """
+    current_password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, validators=[validate_password])
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
@@ -64,9 +66,14 @@ class UserChangePasswordSerializer(serializers.Serializer):
         fields = ['password', 'password2']
 
     def validate(self, attrs):
+        current_password = attrs.get('current_password')
         password = attrs.get('password')
         password2 = attrs.get('password2')
         user = self.context.get('user')
+
+        if not check_password(current_password, user.password):
+            raise serializers.ValidationError(CURRENT_PASSWORD_CHECK)
+
         if password != password2:
             raise serializers.ValidationError(password_do_not_match)
         user.set_password(password)

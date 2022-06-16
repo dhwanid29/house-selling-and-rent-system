@@ -12,6 +12,7 @@ email_body = "Click Following Link to Reset Your Password "
 email_subject = "Reset Your Password"
 not_registered = "You are not a registered user."
 invalid_token = "Token is not Valid or Expired."
+CURRENT_PASSWORD_CHECK = "Current password is invalid"
 
 # views messages
 
