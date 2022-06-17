@@ -52,7 +52,7 @@ class HouseImages(models.Model):
     """
     Model to create HouseImages Table
     """
-    house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='house_images')
+    house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='house_image_set')
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     house_image = models.ImageField(upload_to='house_images/', null=True, blank=True)
     created_date = models.DateField(auto_now_add=True, null=True)
@@ -65,7 +65,7 @@ class HouseReview(models.Model):
     """
     Model to create HouseReview Table
     """
-    house = models.ForeignKey(House, null=True, on_delete=models.CASCADE)
+    house = models.ForeignKey(House, null=True, on_delete=models.CASCADE, related_name='house_review_set')
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     review = models.TextField()
     created_date = models.DateField(auto_now_add=True, null=True)
@@ -84,3 +84,13 @@ class SiteReview(models.Model):
 
     def __str__(self):
         return self.review
+
+
+class Likes(models.Model):
+    user = models.ManyToManyField(User, null=True)
+    house = models.ForeignKey(House, on_delete=models.CASCADE)
+
+
+class Favourites(models.Model):
+    user = models.ManyToManyField(User)
+    house = models.ForeignKey(House, on_delete=models.CASCADE)

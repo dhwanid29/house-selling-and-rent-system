@@ -1,3 +1,6 @@
+from warnings import filters
+
+import django_filters
 from django.http import HttpResponse
 from django_filters import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
@@ -7,9 +10,9 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from constants import NO_ACCESS_UPDATE_REVIEW, NO_ACCESS_UPDATE_HOUSE_IMAGE
-from house.models import House, Amenities, HouseReview, SiteReview, HouseImages
+from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes
 from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
-    SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer
+    SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer, LikesSerializer
 
 
 class AddAmenities(generics.CreateAPIView):
@@ -40,6 +43,14 @@ class AmenitiesView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.D
         return self.destroy(request, id)
 
 
+# class PriceFilter(django_filters.FilterSet):
+#     price = django_filters.RangeFilter()
+#
+#     class Meta:
+#         model = House
+#         fields = ['price']
+
+
 class HouseViewSet(viewsets.ModelViewSet):
     """
     View to get, update, delete House Details
@@ -49,8 +60,9 @@ class HouseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    # filterset_class = PriceFilter
     filterset_fields = ['amenities', 'no_of_bedrooms']
-    search_fields = ['residence_name', 'city']
+    search_fields = '__all__'
     ordering_fields = '__all__'
 
     def create(self, request, *args, **kwargs):
@@ -109,6 +121,10 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
     queryset = HouseReview.objects.all()
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['review']
+    search_fields = ['review']
+    ordering_fields = ['review']
 
     def create(self, request, *args, **kwargs):
         request.data['user'] = request.user.id
@@ -128,6 +144,15 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({'msg': NO_ACCESS_UPDATE_REVIEW}, status=status.HTTP_400_BAD_REQUEST)
+
+    # def retrieve(self, request, *args, **kwargs):
+    #     instance = self.get_object(house)
+    #     print(instance, '----------------------------------------------------------------------')
+    #     print('hie', instance)
+    #     house_review_queryset = HouseReview.objects.filter(house=instance)
+    #     print(house_review_queryset)
+    #     house_review_serializer = HouseReviewSerializer(house_review_queryset, many=True)
+    #     return Response(house_review_serializer.data, status=status.HTTP_200_OK)
 
 
 class HouseImageViewSet(viewsets.ModelViewSet):
@@ -156,3 +181,22 @@ class HouseImageViewSet(viewsets.ModelViewSet):
             self.perform_update(serializer)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({'msg': NO_ACCESS_UPDATE_HOUSE_IMAGE}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LikesViewSet(viewsets.ModelViewSet):
+    queryset = Likes.objects.all()
+    serializer_class = LikesSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        house_obj = House.objects.get(pk=request.data.get('house'))
+        print(house_obj.id)
+        like, created = Likes.objects.get_or_create(house=house_obj)
+        print(like, 'njsd')
+        print(created, 'jzdshj')
+        like.user.add(request.user)
+
+        all_likes = Likes.objects.get(house=house_obj)
+        serializer = LikesSerializer(all_likes, many=False)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
