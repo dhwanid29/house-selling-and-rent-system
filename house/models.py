@@ -87,10 +87,20 @@ class SiteReview(models.Model):
 
 
 class Likes(models.Model):
-    user = models.ManyToManyField(User, null=True)
+    user = models.ManyToManyField(User, through="LikesUser")
     house = models.ForeignKey(House, on_delete=models.CASCADE)
+
+
+class LikesUser(models.Model):
+    likes = models.ForeignKey(Likes, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
 class Favourites(models.Model):
-    user = models.ManyToManyField(User)
+    user = models.ManyToManyField(User, through="FavouritesUser")
     house = models.ForeignKey(House, on_delete=models.CASCADE)
+
+
+class FavouritesUser(models.Model):
+    favourites = models.ForeignKey(Favourites, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -10,9 +10,10 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from constants import NO_ACCESS_UPDATE_REVIEW, NO_ACCESS_UPDATE_HOUSE_IMAGE
-from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes
+from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, LikesUser, Favourites, \
+    FavouritesUser
 from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
-    SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer, LikesSerializer
+    SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer, LikesSerializer, FavouritesSerializer
 
 
 class AddAmenities(generics.CreateAPIView):
@@ -190,13 +191,68 @@ class LikesViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         house_obj = House.objects.get(pk=request.data.get('house'))
-        print(house_obj.id)
         like, created = Likes.objects.get_or_create(house=house_obj)
-        print(like, 'njsd')
-        print(created, 'jzdshj')
         like.user.add(request.user)
-
         all_likes = Likes.objects.get(house=house_obj)
         serializer = LikesSerializer(all_likes, many=False)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+        request.data['house'] = instance.house.id
+        house_obj = House.objects.get(pk=request.data.get('house'))
+        liked_user = Likes.objects.filter(house=instance.house.id).values('user')
+        for user in liked_user:
+            if user['user'] == request.user.id:
+                instance.user.remove(request.user)
+                all_likes = Likes.objects.get(house=house_obj)
+                serializer = self.get_serializer(all_likes, data=request.data)
+                serializer.is_valid(raise_exception=True)
+                self.perform_update(serializer)
+                return Response(serializer.data)
+        like, created = Likes.objects.update_or_create(house=house_obj)
+        like.user.add(request.user)
+        all_likes = Likes.objects.get(house=house_obj)
+        serializer = self.get_serializer(all_likes, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+
+class FavouritesViewSet(viewsets.ModelViewSet):
+    queryset = Favourites.objects.all()
+    serializer_class = FavouritesSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        house_obj = House.objects.get(pk=request.data.get('house'))
+        favourite, created = Favourites.objects.get_or_create(house=house_obj)
+        favourite.user.add(request.user)
+        all_favourites = Favourites.objects.get(house=house_obj)
+        serializer = FavouritesSerializer(all_favourites, many=False)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+        request.data['house'] = instance.house.id
+        house_obj = House.objects.get(pk=request.data.get('house'))
+        favourited_user = Favourites.objects.filter(house=instance.house.id).values('user')
+        for user in favourited_user:
+            if user['user'] == request.user.id:
+                instance.user.remove(request.user)
+                all_favourites = Favourites.objects.get(house=house_obj)
+                serializer = self.get_serializer(all_favourites, data=request.data)
+                serializer.is_valid(raise_exception=True)
+                self.perform_update(serializer)
+                return Response(serializer.data)
+        favourite, created = Favourites.objects.update_or_create(house=house_obj)
+        favourite.user.add(request.user)
+        all_favourites = Favourites.objects.get(house=house_obj)
+        serializer = self.get_serializer(all_favourites, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
