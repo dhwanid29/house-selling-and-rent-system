@@ -107,21 +107,14 @@ class HouseSerializer(serializers.ModelSerializer):
 
 
 class LikesSerializer(serializers.ModelSerializer):
-    # user = serializers.Pr()
-    # user = serializers.IntegerField(required=True)
-
 
     class Meta:
         model = Likes
         fields = ['user', 'house']
 
-    def create(self, validated_data):
-        print(validated_data)
-        user = validated_data.pop('user')
-        print(user, '88888888888888888888888888888888888888888888888888888888')
-        return user
-
 
 class FavouritesSerializer(serializers.ModelSerializer):
-    model = Favourites
-    fields = ['user', 'house']
+
+    class Meta:
+        model = Favourites
+        fields = ['user', 'house']

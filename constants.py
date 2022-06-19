@@ -23,6 +23,10 @@ INVALID_EMAIL_OR_PASSWORD = "Email or Password is not valid"
 PASSWORD_CHANGED = "Password Changed Successfully!"
 PASSWORD_RESET_LINK = "Password Reset link send. Please check your Email"
 PASSWORD_RESET_SUCCESSFUL = "Password Reset Successfully"
+LIKE_ERROR = "You have already liked this house"
+DISLIKE_ERROR = "You have not liked this house"
+FAVOURITE_ERROR = "You have already added this house to favourites"
+REMOVE_FAVOURITES_ERROR = "You haven't added this house to favourites"
 
 # ACCOUNTS VALIDATIONS
 

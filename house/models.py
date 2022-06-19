@@ -23,6 +23,10 @@ PROJECT_STATUS_CHOICES = (
     ("Under Construction", "Under Construction"),
     ("Constructed", "Constructed"),
 )
+BUY_OR_SELL_CHOICES = (
+    ("Sell", "Sell"),
+    ("Rent", "Rent"),
+)
 
 
 class House(models.Model):
@@ -40,9 +44,11 @@ class House(models.Model):
     state = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     sqft = models.IntegerField()
+    selling_choice = models.CharField(max_length=50, choices=BUY_OR_SELL_CHOICES, default="Buy")
     possession = models.CharField(max_length=50, choices=POSSESSION_CHOICES, default="Ready to Take")
     project_status = models.CharField(max_length=50, choices=PROJECT_STATUS_CHOICES, default="Constructed")
     created_date = models.DateField(auto_now_add=True, blank=True)
+
 
     def __str__(self):
         return self.residence_name
