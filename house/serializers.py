@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from accounts.models import User
 from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, Favourites
