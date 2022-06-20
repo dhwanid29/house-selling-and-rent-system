@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from accounts.models import User
 from accounts.utils import EmailSend
 from constants import NO_ACCESS_UPDATE_REVIEW, NO_ACCESS_UPDATE_HOUSE_IMAGE, DISLIKE_ERROR, LIKE_ERROR, FAVOURITE_ERROR, \
-    REMOVE_FAVOURITES_ERROR, EMAIL_BODY_FAVOURITES, EMAIL_SUBJECT_FAVOURITES, NOT_REGISTERED
+    REMOVE_FAVOURITES_ERROR, EMAIL_BODY_FAVOURITES, EMAIL_SUBJECT_FAVOURITES, NOT_REGISTERED, HOUSE_DOES_NOT_EXIST
 from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, LikesUser, Favourites, \
     FavouritesUser
 from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
@@ -121,6 +121,10 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
     ordering_fields = ['review']
 
     def create(self, request, *args, **kwargs):
+        get_house = request.data.get('house')
+        find_house = House.objects.filter(id=get_house)
+        if not find_house:
+            return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
         request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -150,6 +154,10 @@ class HouseImageViewSet(viewsets.ModelViewSet):
     lookup_field = 'id'
 
     def create(self, request, *args, **kwargs):
+        get_house = request.data.get('house')
+        find_house = House.objects.filter(id=get_house)
+        if not find_house:
+            return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
         request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -178,6 +186,10 @@ class LikesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        get_house = request.data.get('house')
+        find_house = House.objects.filter(id=get_house)
+        if not find_house:
+            return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
         house_obj = House.objects.get(pk=request.data.get('house'))
         liked_user = Likes.objects.filter(house=house_obj.id).values('user')
         liked_user_lists = []
@@ -219,6 +231,10 @@ class FavouritesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, attrs=None, *args, **kwargs):
+        get_house = request.data.get('house')
+        find_house = House.objects.filter(id=get_house)
+        if not find_house:
+            return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
         house_obj = House.objects.get(pk=request.data.get('house'))
         favourited_user = Favourites.objects.filter(house=house_obj.id).values('user')
         favourited_user_lists = []
@@ -233,7 +249,8 @@ class FavouritesViewSet(viewsets.ModelViewSet):
                 # Send Mail
                 data = {
                     'subject': EMAIL_SUBJECT_FAVOURITES,
-                    'body': EMAIL_BODY_FAVOURITES + "\nUser Details:" + "\nName - " + request.user.first_name + request.user.last_name + "\nEmail - " + request.user.email +
+                    'body': EMAIL_BODY_FAVOURITES + "\nUser Details:" + "\nName - " + request.user.first_name +
+                            request.user.last_name + "\nEmail - " + request.user.email +
                             "\nPhone Number - " + str(request.user.phone_number),
                     'to_email': user.email
                 }
@@ -296,9 +313,12 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
     permission_classes = [IsAuthenticated]
     filter_class = PriceAndDateFilter
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
-    search_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
-    ordering_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
+    filterset_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name',
+                        'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
+    search_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft',
+                     'selling_choice', 'possession', 'project_status', 'is_available']
+    ordering_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft',
+                       'selling_choice', 'possession', 'project_status', 'is_available']
 
     def get(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -306,7 +326,7 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
         return Response(serializer.data)
 
 
-class FavoutitesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
+class FavouritesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
     """
     View to display all the shortlisted house to user
     """
@@ -315,9 +335,13 @@ class FavoutitesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
     lookup_field = 'user'
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    # filterset_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
-    # search_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
-    # ordering_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
+
+    # filterset_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft',
+    # 'selling_choice', 'possession', 'project_status', 'is_available']
+    # search_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft',
+    # 'selling_choice', 'possession', 'project_status', 'is_available']
+    # ordering_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft',
+    # 'selling_choice', 'possession', 'project_status', 'is_available']
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
