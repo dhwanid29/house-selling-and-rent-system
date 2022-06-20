@@ -16,4 +16,5 @@ router.register('favourites', FavouritesViewSet, basename='favourites')
 urlpatterns = [
     path('add_amenities/', AddAmenities.as_view(), name="add_amenities"),
     path('amenities/<int:id>/', AmenitiesView.as_view(), name="amenities"),
+
 ] + router.urls

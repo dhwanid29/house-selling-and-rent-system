@@ -1,11 +1,17 @@
+from warnings import filters
+
+import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, mixins, status, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
+from accounts.models import User
+from accounts.utils import EmailSend
 from constants import NO_ACCESS_UPDATE_REVIEW, NO_ACCESS_UPDATE_HOUSE_IMAGE, DISLIKE_ERROR, LIKE_ERROR, FAVOURITE_ERROR, \
-    REMOVE_FAVOURITES_ERROR
+    REMOVE_FAVOURITES_ERROR, EMAIL_BODY_FAVOURITES, EMAIL_SUBJECT_FAVOURITES, NOT_REGISTERED
 from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, LikesUser, Favourites, \
     FavouritesUser
 from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
@@ -49,7 +55,6 @@ class HouseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    # filterset_class = PriceFilter
     filterset_fields = ['amenities', 'no_of_bedrooms']
     search_fields = '__all__'
     ordering_fields = '__all__'
@@ -164,6 +169,9 @@ class HouseImageViewSet(viewsets.ModelViewSet):
 
 
 class LikesViewSet(viewsets.ModelViewSet):
+    """
+    View to Like and Dislike House
+    """
     queryset = Likes.objects.all()
     serializer_class = LikesSerializer
     lookup_field = 'house'
@@ -202,14 +210,16 @@ class LikesViewSet(viewsets.ModelViewSet):
 
 
 class FavouritesViewSet(viewsets.ModelViewSet):
+    """
+    View to Shortlist House and remove House from Shortlisted list
+    """
     queryset = Favourites.objects.all()
     serializer_class = FavouritesSerializer
     lookup_field = 'house'
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request, attrs=None, *args, **kwargs):
         house_obj = House.objects.get(pk=request.data.get('house'))
-        print(house_obj.user.email, 'dfffffffff')
         favourited_user = Favourites.objects.filter(house=house_obj.id).values('user')
         favourited_user_lists = []
         for user in favourited_user:
@@ -217,34 +227,24 @@ class FavouritesViewSet(viewsets.ModelViewSet):
         if str(request.user.id) not in favourited_user_lists:
             favourite, created = Favourites.objects.get_or_create(house=house_obj)
             favourite.user.add(request.user)
+            email = house_obj.user.email
+            if User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
+                # Send Mail
+                data = {
+                    'subject': EMAIL_SUBJECT_FAVOURITES,
+                    'body': EMAIL_BODY_FAVOURITES + "\nUser Details:" + "\nName - " + request.user.first_name + request.user.last_name + "\nEmail - " + request.user.email +
+                            "\nPhone Number - " + str(request.user.phone_number),
+                    'to_email': user.email
+                }
+                EmailSend.send_email(data)
+            else:
+                raise ValidationError(NOT_REGISTERED)
             all_favourites = Favourites.objects.get(house=house_obj)
             serializer = FavouritesSerializer(all_favourites, many=False)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'msg': FAVOURITE_ERROR}, status=status.HTTP_400_BAD_REQUEST)
-
-
-        # get_email = House.objects.filter(id=house)
-        # email = attrs.get('email')
-        # if User.objects.filter(email=email).exists():
-        #     user = User.objects.get(email=email)
-        #     uid = urlsafe_base64_encode(force_bytes(user.id))
-        #     print('Encoded UID', uid)
-        #     token = PasswordResetTokenGenerator().make_token(user)
-        #     print('Password Reset Token', token)
-        #     link = HOST_URL + '/reset-password/' + uid + '/' + token
-        #     print('Password Reset Link', link)
-        #     # Send Mail
-        #     body = EMAIL_BODY + link
-        #     data = {
-        #         'subject': EMAIL_SUBJECT,
-        #         'body': body,
-        #         'to_email': user.email
-        #     }
-        #     EmailSend.send_email(data)
-        #     return attrs
-        # else:
-        #     raise ValidationError(NOT_REGISTERED)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -260,3 +260,14 @@ class FavouritesViewSet(viewsets.ModelViewSet):
                 self.perform_update(serializer)
                 return Response(serializer.data)
         return Response({'msg': REMOVE_FAVOURITES_ERROR}, status=status.HTTP_204_NO_CONTENT)
+
+
+class PriceFilter(django_filters.FilterSet):
+    price = django_filters.RangeFilter()
+
+    class Meta:
+        model = House
+        fields = ['price']
+
+
+

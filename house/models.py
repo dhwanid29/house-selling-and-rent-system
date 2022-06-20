@@ -36,6 +36,7 @@ class House(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     amenities = models.ManyToManyField(Amenities)
     residence_name = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, null=True)
     price = models.DecimalField(max_digits=20, decimal_places=2)
     no_of_bedrooms = models.IntegerField()
     no_of_lift = models.IntegerField()
@@ -47,7 +48,9 @@ class House(models.Model):
     selling_choice = models.CharField(max_length=50, choices=BUY_OR_SELL_CHOICES, default="Buy")
     possession = models.CharField(max_length=50, choices=POSSESSION_CHOICES, default="Ready to Take")
     project_status = models.CharField(max_length=50, choices=PROJECT_STATUS_CHOICES, default="Constructed")
+    is_available = models.BooleanField(default=True)
     created_date = models.DateField(auto_now_add=True, blank=True)
+
 
 
     def __str__(self):

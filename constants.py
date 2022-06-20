@@ -46,3 +46,5 @@ EMAIL_REQUIRED = 'Users must have an email address'
 # HOUSE VIEW
 NO_ACCESS_UPDATE_REVIEW = "You do not have access to this update this review."
 NO_ACCESS_UPDATE_HOUSE_IMAGE = "You do not have rights to update these images."
+EMAIL_BODY_FAVOURITES = "Your House is Shortlisted by someone."
+EMAIL_SUBJECT_FAVOURITES = "Contact this user ->"
