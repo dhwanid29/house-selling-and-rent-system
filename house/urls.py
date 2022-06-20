@@ -1,6 +1,6 @@
 from django.urls import path
 from house.views import AmenitiesView, AddAmenities, HouseReviewViewSet, SiteReviewViewSet, \
-    HouseImageViewSet, HouseViewSet, LikesViewSet, FavouritesViewSet
+    HouseImageViewSet, HouseViewSet, LikesViewSet, FavouritesViewSet, BuyerHouseListView, BuyerHouseRetrieveView
 
 from rest_framework.routers import DefaultRouter
 
@@ -16,5 +16,7 @@ router.register('favourites', FavouritesViewSet, basename='favourites')
 urlpatterns = [
     path('add_amenities/', AddAmenities.as_view(), name="add_amenities"),
     path('amenities/<int:id>/', AmenitiesView.as_view(), name="amenities"),
+    path('available_houses/', BuyerHouseListView.as_view(), name="available_houses"),
+    path('available_houses/<int:id>/', BuyerHouseRetrieveView.as_view(), name="available_houses"),
 
 ] + router.urls

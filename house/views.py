@@ -262,12 +262,48 @@ class FavouritesViewSet(viewsets.ModelViewSet):
         return Response({'msg': REMOVE_FAVOURITES_ERROR}, status=status.HTTP_204_NO_CONTENT)
 
 
-class PriceFilter(django_filters.FilterSet):
+class PriceAndDateFilter(django_filters.FilterSet):
     price = django_filters.RangeFilter()
+    created_date = django_filters.DateFromToRangeFilter()
 
     class Meta:
         model = House
-        fields = ['price']
+        fields = ['price', 'created_date']
+
+
+class BuyerHouseRetrieveView(generics.GenericAPIView, mixins.RetrieveModelMixin):
+    """
+    View to display available house details to buyer
+    """
+    queryset = House.objects.filter(is_available=True)
+    serializer_class = HouseSerializer
+    lookup_field = 'id'
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
+    """
+    View to display available house list to buyer
+    """
+    queryset = House.objects.filter(is_available=True)
+    serializer_class = HouseSerializer
+    lookup_field = 'id'
+    permission_classes = [IsAuthenticated]
+    filter_class = PriceAndDateFilter
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
+    search_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
+    ordering_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft', 'selling_choice', 'possession', 'project_status', 'is_available']
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 
