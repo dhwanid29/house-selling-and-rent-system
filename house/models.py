@@ -85,7 +85,7 @@ class HouseReview(models.Model):
 
 class SiteReview(models.Model):
     """
-    Model to create HouseReview Table
+    Model to create SiteReview Table
     """
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     review = models.TextField()
@@ -96,24 +96,35 @@ class SiteReview(models.Model):
 
 
 class Likes(models.Model):
+    """
+    Model to Like House
+    """
     user = models.ManyToManyField(User, through="LikesUser")
     house = models.ForeignKey(House, on_delete=models.CASCADE)
 
 
 class LikesUser(models.Model):
+    """
+    Model to Like House
+    """
     likes = models.ForeignKey(Likes, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
 class Favourites(models.Model):
+    """
+    Model to Add House to Favourites
+    """
     user = models.ManyToManyField(User, through="FavouritesUser")
     house = models.ForeignKey(House, on_delete=models.CASCADE)
 
 
 class FavouritesUser(models.Model):
+    """
+    Model to Add House to Favourites
+    """
     favourites = models.ForeignKey(Favourites, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.user.username
-

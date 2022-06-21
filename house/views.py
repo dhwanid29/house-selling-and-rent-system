@@ -15,7 +15,8 @@ from constants import NO_ACCESS_UPDATE_REVIEW, NO_ACCESS_UPDATE_HOUSE_IMAGE, DIS
 from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, LikesUser, Favourites, \
     FavouritesUser
 from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
-    SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer, LikesSerializer, FavouritesSerializer
+    SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer, LikesSerializer, FavouritesSerializer, \
+    MyFavouritesSerializer, HouseUpdateSerializer, HouseImageUpdateSerializer
 
 
 class AddAmenities(generics.CreateAPIView):
@@ -71,7 +72,7 @@ class HouseViewSet(viewsets.ModelViewSet):
         request.data['user'] = request.user.id
         instance = self.get_object()
         if instance.user.id == request.user.id:
-            serializer = HouseSerializer(instance, data=request.data)
+            serializer = HouseUpdateSerializer(instance, data=request.data)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
 
@@ -169,7 +170,7 @@ class HouseImageViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         if instance.user.id == request.user.id:
             request.data['house'] = instance.house.id
-            serializer = self.get_serializer(instance, data=request.data)
+            serializer = HouseImageUpdateSerializer(instance, data=request.data)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -325,3 +326,17 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class FavouritesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
+    """
+    View to display all the shortlisted house to user
+    """
+    serializer_class = MyFavouritesSerializer
+    lookup_field = 'user'
+    permission_classes = [IsAuthenticated]
+
+
+    def get(self, request, *args, **kwargs):
+        favs = FavouritesUser.objects.filter(user=request.user.id)
+        s = MyFavouritesSerializer(favs, many=True)
+        return Response(s.data)
