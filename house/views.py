@@ -325,3 +325,48 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class FavouritesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
+    """
+    View to display all the shortlisted house to user
+    """
+    queryset = Favourites.objects.all()
+    serializer_class = FavouritesSerializer
+    lookup_field = 'user'
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+
+    # filterset_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft',
+    # 'selling_choice', 'possession', 'project_status', 'is_available']
+    # search_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft',
+    # 'selling_choice', 'possession', 'project_status', 'is_available']
+    # ordering_fields = ['amenities', 'no_of_bedrooms', 'address', 'city', 'state', 'residence_name', 'sqft',
+    # 'selling_choice', 'possession', 'project_status', 'is_available']
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        print(instance, 'jsbjab')
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    # def get(self, request, *args, **kwargs):
+    #     # instance = self.get_object()
+    #     favourited_user = Favourites.objects.all().values('user')
+    #     print(favourited_user)
+    #     house_list = []
+    #     for user in favourited_user:
+    #         if user['user'] == request.user.id:
+    #             queryset = FavouritesUser.objects.filter(user=request.user.id)
+    #             print(queryset)
+    #             for i in queryset:
+    #                 print(i.favourites.id, 'uuuuuuuuuuuuuuuuuuuuuuuu')
+    #                 fav_queryset = Favourites.objects.filter(id=i.favourites.id)
+    #                 for j in fav_queryset:
+    #                     print(j.house.id, 'iiiiiii')
+    #                     house_list.append(j.house.id)
+    #         for i in house_list:
+    #             house_queryset = House.objects.filter(id=j.house.id)
+    #         serializer = self.get_serializer(house_queryset, many=True)
+    #         return Response(serializer.data)
+
+
