@@ -335,7 +335,6 @@ class FavouritesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
     lookup_field = 'user'
     permission_classes = [IsAuthenticated]
 
-
     def get(self, request, *args, **kwargs):
         favs = FavouritesUser.objects.filter(user=request.user.id)
         s = MyFavouritesSerializer(favs, many=True)
