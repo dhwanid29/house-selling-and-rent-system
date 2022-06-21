@@ -114,7 +114,7 @@ class HouseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = House
-        fields = ['user', 'amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
+        fields = ['house_image_set', 'house_review_set', 'user', 'amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
                   'no_of_building', 'state', 'city', 'sqft', 'selling_choice', 'possession', 'project_status']
 
 
@@ -127,7 +127,7 @@ class HouseUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = House
-        fields = ['amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
+        fields = ['house_image_set', 'house_review_set', 'amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
                   'no_of_building', 'state', 'city', 'sqft', 'selling_choice', 'possession', 'project_status',
                   'is_available']
 
