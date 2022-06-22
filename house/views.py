@@ -72,7 +72,7 @@ class HouseViewSet(viewsets.ModelViewSet):
         request.data['user'] = request.user.id
         instance = self.get_object()
         if instance.user.id == request.user.id:
-            serializer = HouseUpdateSerializer(instance, data=request.data)
+            serializer = HouseUpdateSerializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
 
@@ -100,7 +100,7 @@ class SiteReviewViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.user.id == request.user.id:
-            serializer = SiteReviewUpdateSerializer(instance, data=request.data)
+            serializer = SiteReviewUpdateSerializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
 
@@ -137,7 +137,7 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         if instance.user.id == request.user.id:
             request.data['house'] = instance.house.id
-            serializer = HouseReviewUpdateSerializer(instance, data=request.data)
+            serializer = HouseReviewUpdateSerializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
 
@@ -170,7 +170,7 @@ class HouseImageViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         if instance.user.id == request.user.id:
             request.data['house'] = instance.house.id
-            serializer = HouseImageUpdateSerializer(instance, data=request.data)
+            serializer = HouseImageUpdateSerializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -215,7 +215,7 @@ class LikesViewSet(viewsets.ModelViewSet):
             if user['user'] == request.user.id:
                 instance.user.remove(request.user)
                 all_likes = Likes.objects.get(house=house_obj)
-                serializer = self.get_serializer(all_likes, data=request.data)
+                serializer = self.get_serializer(all_likes, data=request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
                 return Response(serializer.data)
@@ -273,7 +273,7 @@ class FavouritesViewSet(viewsets.ModelViewSet):
             if user['user'] == request.user.id:
                 instance.user.remove(request.user)
                 all_favourites = Favourites.objects.get(house=house_obj)
-                serializer = self.get_serializer(all_favourites, data=request.data)
+                serializer = self.get_serializer(all_favourites, data=request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
                 return Response(serializer.data)
@@ -335,8 +335,7 @@ class FavouritesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
     lookup_field = 'user'
     permission_classes = [IsAuthenticated]
 
-
     def get(self, request, *args, **kwargs):
         favs = FavouritesUser.objects.filter(user=request.user.id)
-        s = MyFavouritesSerializer(favs, many=True)
-        return Response(s.data)
+        favourites_data = MyFavouritesSerializer(favs, many=True)
+        return Response(favourites_data.data)
