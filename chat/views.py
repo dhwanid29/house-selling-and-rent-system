@@ -28,7 +28,7 @@ class UserValidationView(View):
         return redirect('receivers')
 
 
-class GetReceiverList(View):
+class CreateRoom(View):
 
     def get(self, request):
         queryset = House.objects.all().distinct('user')
