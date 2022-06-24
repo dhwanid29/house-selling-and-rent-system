@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+</head>
+<body>
+    <h1>Enter your username and token:</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Enter Your Token: </label>
+        <input type="text" id="token" name="token">
+        <br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
