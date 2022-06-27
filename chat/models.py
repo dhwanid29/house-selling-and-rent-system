@@ -11,3 +11,6 @@ class Message(models.Model):
     message = models.TextField()
     room_name = models.CharField(max_length=255, unique=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.room_name
