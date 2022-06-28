@@ -4,16 +4,31 @@
     <title>Chat Room</title>
 </head>
 <body>
-    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <div id="chat-log" cols="100" rows="20">
+
+        {% for msg in msgs %}
+            <p> {{  msg.sender.username }} : {{ msg.message }} </p>
+        {% endfor %}
+
+    </div>
+
+    <br>
     <input id="chat-message-input" type="text" size="100"><br>
     <input id="chat-message-submit" type="button" value="Send">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     {{ room_name|json_script:"room-name" }}
     <script>
         var sender = '{{ sender_id }}';
+        var sender_name = '{{ sender_username }}';
         var receiver = '{{ receiver_id }}';
+        var receiver_name = '{{ receiver_username }}';
+        {#var msgs = {{ msgs }};#}
+
+        {#console.log(msgs);#}
 
         console.log("***********");
         console.log(sender);
+        console.log(sender_name);
         console.log(receiver);
         console.log("***********");
 
@@ -34,7 +49,29 @@
             console.log(data);
             console.log("***********");
 
-            document.querySelector('#chat-log').value += (data.message + '\n');
+            {#var tag = document.createElement("p");#}
+            var msg = '{{ data.message }}';
+            {#var text = document.createTextNode(msg);#}
+            {#tag.appendChild(text);#}
+            {#var element = document.getElementById("chat-log");#}
+            {#element.appendChild(tag);#}
+
+            {#var myDiv = $("#chat-log");#}
+            {#console.log(myDiv);#}
+            {#myDiv.innerHTML += '<p>abcd</p>';#}
+            {#var paragraph = document.createElement("p");#}
+            {#console.log(paragraph);#}
+            {##}
+            {#paragraph.textContent = msg;#}
+            {#myDiv.append(paragraph);#}
+
+            $("#chat-log").append("<p>" + data.sender_name + ': ' + data.message + "</p>");
+
+
+            {#document.getElementById("chat-log").insertAdjacentHTML("afterend",#}
+            {#    "<p>{{ data.message }}</p>");#}
+
+            {#document.querySelector('#chat-log').value += (data.message + '\n');#}
         };
 
         chatSocket.onclose = function(e) {
@@ -55,6 +92,7 @@
                 'message': message,
                 'sender': sender,
                 'receiver': receiver,
+                'sender_name': sender_name
             }));
             messageInputDom.value = '';
         };

@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from django.views import View
 
 from accounts.models import User
-from chat.models import Message
+from chat.models import Message, Room
 from house.models import House
 from house_selling import settings
 
@@ -21,10 +21,7 @@ class UserValidationView(View):
     def post(self, request):
         token = request.POST['token']
         valid_data = jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=['HS256'])
-        print(valid_data, '------------------------------------------------------------------------------->')
         validated_user = valid_data['user_id']
-        del request.session['user_id']
-        request.session.modified = True
         request.session['user_id'] = validated_user
         return redirect('receivers')
 
@@ -42,15 +39,15 @@ class CreateRoom(View):
         request.session['receiver_id'] = receiver_id
         receiver = request.session.get("receiver_id")
         receiver_user = User.objects.get(id=receiver)
-        if sender == receiver:
-            return HttpResponse('You cannot chat with yourself.')
+        # if sender == receiver:
+        #     return HttpResponse('You cannot chat with yourself.')
         room_name = f"{sender}_and_{receiver}"
         room = f"{receiver}_and_{sender}"
-        get_all_rooms = Message.objects.filter(Q(room_name=room_name) | Q(room_name=room))
+        get_all_rooms = Room.objects.filter(Q(room_name=room_name) | Q(room_name=room))
         if get_all_rooms:
             return redirect('room', room_name=get_all_rooms[0])
         else:
-            create_room = Message.objects.create(sender=sender_user, receiver=receiver_user, room_name=room_name)
+            create_room = Room.objects.create(sender=sender_user, receiver=receiver_user, room_name=room_name)
             create_room.save()
             return redirect('room', room_name=room_name)
 
@@ -60,15 +57,22 @@ class ChatRoom(View):
     queryset = Message.objects.all()
 
     def get(self, request, room_name, *args, **kwargs):
-        get_room = get_object_or_404(Message, room_name=self.kwargs.get('room_name'))
-        print(get_room, '----------------------------------------->')
+        get_room = get_object_or_404(Room, room_name=self.kwargs.get('room_name'))
         sender = request.session.get("user_id")
+        sender_username_id = User.objects.get(id=sender)
+        sender_username = sender_username_id.username
         receiver = request.session.get("receiver_id")
+        receiver_username_id = User.objects.get(id=receiver)
+        receiver_username = receiver_username_id.username
+        msgs = Message.objects.filter(Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender))
 
         return render(request, 'chat/room.html', {
             'room_name': room_name,
             'sender_id': sender,
             'receiver_id': receiver,
+            'msgs': msgs,
+            'sender_username': sender_username,
+            'receiver_username': receiver_username
         })
 
 
