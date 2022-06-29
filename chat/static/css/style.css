@@ -2,3 +2,29 @@
     margin-left: 20px;
     margin-top: 10px;
 }
+.chat-msg{
+    background: grey;
+    padding: 10px;
+    border: white;
+    border-radius: 5px;
+    font-family: "JetBrains Mono Thin"
+}
+
+.time{
+    background: rgba(65,34,54,0.17);
+    padding: 6px;
+    border: white;
+    border-radius: 5px;
+    font-size: 12px;
+    color: rgba(46,46,46,0.91)
+}
+
+.chat-p{
+    margin-bottom: 30px;
+}
+
+.ScrollStyle
+{
+    max-height: 550px;
+    overflow-y: scroll;
+}
