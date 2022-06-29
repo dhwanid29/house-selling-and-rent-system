@@ -6,6 +6,18 @@
 </head>
 <body>
 <h1>Select the seller you would like to connect with!</h1>
+
+
+{% for user in get_senders %}
+    {% if user.sender.id == sender %}
+        <p><a href = "{% url 'room' user.room_name %}">{{ user.receiver.username }}</a></p>
+    {% endif %}
+{% endfor %}
+
+{% for user in get_receivers %}
+        <p><a href = "{% url 'room' user.room_name %}">{{ user.sender.username }}</a></p>
+{% endfor %}
+
 <form method="post">
 {% csrf_token %}
     <label for="receivers"><h3>Choose a seller:</h3></label>

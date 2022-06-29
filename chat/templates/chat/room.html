@@ -7,7 +7,7 @@
     <div id="chat-log" cols="100" rows="20">
 
         {% for msg in msgs %}
-            <p> {{  msg.sender.username }} : {{ msg.message }} </p>
+            <p> {{  msg.sender.username }} : {{ msg.message }} : {{ msg.timestamp }} </p>
         {% endfor %}
 
     </div>
@@ -45,33 +45,16 @@
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
+            const now = new Date(Date.now())
+            const formatted = " " + now.toLocaleString('default', { month: 'long' }) + " " +  now.getUTCDate().toString()
+                + ", " + now.getFullYear().toString() + " " +
+                now.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase()
+
             console.log("***********");
             console.log(data);
             console.log("***********");
 
-            {#var tag = document.createElement("p");#}
-            var msg = '{{ data.message }}';
-            {#var text = document.createTextNode(msg);#}
-            {#tag.appendChild(text);#}
-            {#var element = document.getElementById("chat-log");#}
-            {#element.appendChild(tag);#}
-
-            {#var myDiv = $("#chat-log");#}
-            {#console.log(myDiv);#}
-            {#myDiv.innerHTML += '<p>abcd</p>';#}
-            {#var paragraph = document.createElement("p");#}
-            {#console.log(paragraph);#}
-            {##}
-            {#paragraph.textContent = msg;#}
-            {#myDiv.append(paragraph);#}
-
-            $("#chat-log").append("<p>" + data.sender_name + ': ' + data.message + "</p>");
-
-
-            {#document.getElementById("chat-log").insertAdjacentHTML("afterend",#}
-            {#    "<p>{{ data.message }}</p>");#}
-
-            {#document.querySelector('#chat-log').value += (data.message + '\n');#}
+            $("#chat-log").append("<p>" + data.sender_name + ': ' + data.message + formatted +  "</p>");
         };
 
         chatSocket.onclose = function(e) {

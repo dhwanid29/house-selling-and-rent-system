@@ -29,8 +29,14 @@ class UserValidationView(View):
 class CreateRoom(View):
 
     def get(self, request):
+        sender = request.session.get("user_id")
         queryset = House.objects.all().distinct('user')
-        return render(request, 'chat/select_receiver.html', {'context': queryset})
+        get_rooms = Room.objects.filter(Q(sender=sender) | Q(receiver=sender))
+        get_senders = Room.objects.filter(sender=sender)
+        get_receivers = Room.objects.filter(receiver=sender)
+        return render(request, 'chat/select_receiver.html', {'context': queryset, 'rooms': get_rooms,
+                                                             'get_senders': get_senders, 'get_receivers': get_receivers,
+                                                             'sender': sender})
 
     def post(self, request):
         sender = request.session.get("user_id")
@@ -39,8 +45,8 @@ class CreateRoom(View):
         request.session['receiver_id'] = receiver_id
         receiver = request.session.get("receiver_id")
         receiver_user = User.objects.get(id=receiver)
-        # if sender == receiver:
-        #     return HttpResponse('You cannot chat with yourself.')
+        if int(sender) == int(receiver):
+            return HttpResponse('You cannot chat with yourself.')
         room_name = f"{sender}_and_{receiver}"
         room = f"{receiver}_and_{sender}"
         get_all_rooms = Room.objects.filter(Q(room_name=room_name) | Q(room_name=room))
@@ -54,10 +60,16 @@ class CreateRoom(View):
 
 class ChatRoom(View):
     template_name = 'chat/room.html'
-    queryset = Message.objects.all()
 
     def get(self, request, room_name, *args, **kwargs):
+        sender = request.session.get("user_id")
+        room = Room.objects.get(room_name=self.kwargs.get("room_name"))
         get_room = get_object_or_404(Room, room_name=self.kwargs.get('room_name'))
+        if room.receiver.id == sender:
+            receivers = room.sender.id
+        else:
+            receivers = room.receiver.id
+        request.session['receiver_id'] = receivers
         sender = request.session.get("user_id")
         sender_username_id = User.objects.get(id=sender)
         sender_username = sender_username_id.username
@@ -74,7 +86,3 @@ class ChatRoom(View):
             'sender_username': sender_username,
             'receiver_username': receiver_username
         })
-
-
-
-
