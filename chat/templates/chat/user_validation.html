@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+{% extends 'chat/base.html' %}
+
+{% block content %}
     <title>Chat</title>
-</head>
-<body>
+
     <h1>Enter your username and token:</h1>
     <form method="POST">
         {% csrf_token %}
@@ -13,8 +11,7 @@
         <br><br>
         <button type="submit">Submit</button>
     </form>
-</body>
-</html>
+{% endblock %}
 
 
 

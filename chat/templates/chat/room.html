@@ -1,20 +1,18 @@
-<html>
-<head>
-    <meta charset="utf-8"/>
-    <title>Chat Room</title>
-</head>
-<body>
-    <div id="chat-log" cols="100" rows="20">
+{% extends 'chat/base.html' %}
+
+{% block content %}
+
+    <div id="chat-log" cols="100" rows="20" class="msg">
 
         {% for msg in msgs %}
-            <p> {{  msg.sender.username }} : {{ msg.message }} : {{ msg.timestamp }} </p>
+            <p> {{  msg.sender.username }} : {{ msg.message }} ::: {{ msg.timestamp }}</p>
         {% endfor %}
 
     </div>
 
     <br>
-    <input id="chat-message-input" type="text" size="100"><br>
-    <input id="chat-message-submit" type="button" value="Send">
+    <input id="chat-message-input" class="msg" type="text" size="100"><br>
+    <input id="chat-message-submit" class="msg" type="button" value="Send">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     {{ room_name|json_script:"room-name" }}
     <script>
@@ -54,7 +52,7 @@
             console.log(data);
             console.log("***********");
 
-            $("#chat-log").append("<p>" + data.sender_name + ': ' + data.message + formatted +  "</p>");
+            $("#chat-log").append("<p>" + data.sender_name + ': ' + data.message + '::: ' + formatted +  "</p>");
         };
 
         chatSocket.onclose = function(e) {
@@ -80,5 +78,4 @@
             messageInputDom.value = '';
         };
     </script>
-</body>
-</html>
+{% endblock %}
