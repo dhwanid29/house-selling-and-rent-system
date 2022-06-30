@@ -5,7 +5,7 @@
     <div id="chat-log" cols="100" rows="20" class="ScrollStyle msg">
 
         {% for msg in msgs %}
-            <p class="chat-p"> <span class="chat-msg">{{  msg.sender.username }} : {{ msg.message }}</span> :::
+            <p class="chat-p"> <span class="chat-msg"><span class="username">{{  msg.sender.username }} :</span> {{ msg.message }}</span> :::
                 <span class="time">{{ msg.timestamp }}</span></p>
         {% endfor %}
 
@@ -53,8 +53,8 @@
             console.log(data);
             console.log("***********");
 
-            $("#chat-log").append("<p>" + "<span  class='chat-msg'>" + data.sender_name + ': ' + data.message +
-                "</span>" + '::: ' + formatted +  "</p>");
+            $("#chat-log").append("<p>" + "<span  class='chat-msg'>" + "<span class='username'>" + data.sender_name + "</span>" + ': ' + data.message +
+                "</span>" + '::: ' + "<span class='time'>"  + formatted +  "</span>" + "</p>");
         };
 
         chatSocket.onclose = function(e) {

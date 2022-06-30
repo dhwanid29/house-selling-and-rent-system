@@ -6,6 +6,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
+from jwt import InvalidSignatureError
+from rest_framework.exceptions import ValidationError
 
 from accounts.models import User
 from chat.models import Message, Room
@@ -62,9 +64,9 @@ class ChatRoom(View):
     template_name = 'chat/room.html'
 
     def get(self, request, room_name, *args, **kwargs):
+        get_room = get_object_or_404(Room, room_name=self.kwargs.get('room_name'))
         sender = request.session.get("user_id")
         room = Room.objects.get(room_name=self.kwargs.get("room_name"))
-        get_room = get_object_or_404(Room, room_name=self.kwargs.get('room_name'))
         if room.receiver.id == sender:
             receivers = room.sender.id
         else:
