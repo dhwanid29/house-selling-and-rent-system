@@ -9,6 +9,9 @@
         <label>Enter Your Token: </label>
         <input type="text" id="token" name="token">
         <br><br>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
         <button type="submit">Submit</button>
     </form>
 {% endblock %}

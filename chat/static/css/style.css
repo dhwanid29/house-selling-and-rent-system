@@ -32,3 +32,9 @@
 .username{
     color: white;
 }
+
+.error{
+    color: red;
+    font-family: Arial;
+    font-size: 10px;
+}

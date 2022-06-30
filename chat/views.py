@@ -1,13 +1,11 @@
-from audioop import reverse
-
 import jwt
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.utils.crypto import get_random_string
 from django.views import View
-from jwt import InvalidSignatureError
-from rest_framework.exceptions import ValidationError
+from jwt import InvalidSignatureError, DecodeError
+
 
 from accounts.models import User
 from chat.models import Message, Room
@@ -22,9 +20,13 @@ class UserValidationView(View):
 
     def post(self, request):
         token = request.POST['token']
-        valid_data = jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=['HS256'])
-        validated_user = valid_data['user_id']
-        request.session['user_id'] = validated_user
+        try:
+            valid_data = jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=['HS256'])
+            validated_user = valid_data['user_id']
+            request.session['user_id'] = validated_user
+        except DecodeError as e :
+            error = "Invalid Token, Please enter valid Token"
+            return render(request, 'chat/user_validation.html', {'error': error})
         return redirect('receivers')
 
 
@@ -49,9 +51,9 @@ class CreateRoom(View):
         receiver_user = User.objects.get(id=receiver)
         if int(sender) == int(receiver):
             return HttpResponse('You cannot chat with yourself.')
-        room_name = f"{sender}_and_{receiver}"
-        room = f"{receiver}_and_{sender}"
-        get_all_rooms = Room.objects.filter(Q(room_name=room_name) | Q(room_name=room))
+        room_name = get_random_string(length=10)
+
+        get_all_rooms = Room.objects.filter(Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender))
         if get_all_rooms:
             return redirect('room', room_name=get_all_rooms[0])
         else:
