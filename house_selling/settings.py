@@ -86,7 +86,6 @@ WSGI_APPLICATION = 'house_selling.wsgi.application'
 ASGI_APPLICATION = "house_selling.asgi.application"
 
 # Channels
-ASGI_APPLICATION = 'house_selling.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {

@@ -35,49 +35,58 @@
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
         const chatSocket = new WebSocket(
-            'ws://'
+            'wss://'
             + window.location.host
-            + '/ws/chat/'
+            + '/wss/chat/'
             + roomName
             + '/'
         );
 
+
+
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             const now = new Date(Date.now())
-            const formatted = " " + now.toLocaleString('default', { month: 'long' }) + " " +  now.getUTCDate().toString()
+            const formatted = " " + now.toLocaleString('default', {month: 'long'}) + " " + now.getUTCDate().toString()
                 + ", " + now.getFullYear().toString() + " " +
-                now.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase()
+                now.toLocaleString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true}).toLowerCase()
 
             console.log("***********");
             console.log(data);
             console.log("***********");
-
-            $("#chat-log").append("<p>" + "<span  class='chat-msg'>" + "<span class='username'>" + data.sender_name + "</span>" + ': ' + data.message +
-                "</span>" + '::: ' + "<span class='time'>"  + formatted +  "</span>" + "</p>");
-        };
-
-        chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
-        };
-
-        document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#chat-message-submit').click();
+            if (data.message.trim().length !== 0) {
+                $("#chat-log").append("<p>" + "<span  class='chat-msg'>" + "<span class='username'>" + data.sender_name + "</span>" + ': ' + data.message +
+                    "</span>" + '::: ' + "<span class='time'>" + formatted + "</span>" + "</p>");
+                $('#chat-log').scrollTop($('#chat-log')[0].scrollHeight);
             }
-        };
+        }
 
-        document.querySelector('#chat-message-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message,
-                'sender': sender,
-                'receiver': receiver,
-                'sender_name': sender_name
-            }));
-            messageInputDom.value = '';
-        };
+
+            chatSocket.onclose = function (e) {
+                console.error('Chat socket closed unexpectedly');
+            };
+
+            document.querySelector('#chat-message-input').focus();
+            document.querySelector('#chat-message-input').onkeyup = function (e) {
+                if (e.keyCode === 13) {  // enter, return
+                    document.querySelector('#chat-message-submit').click();
+                }
+            };
+
+
+
+                document.querySelector('#chat-message-submit').onclick = function (e) {
+                    const messageInputDom = document.querySelector('#chat-message-input');
+                    const message = messageInputDom.value;
+                    if (message.trim().length !== 0) {
+                    chatSocket.send(JSON.stringify({
+                        'message': message,
+                        'sender': sender,
+                        'receiver': receiver,
+                        'sender_name': sender_name
+                    }));
+                    messageInputDom.value = '';
+                };
+            }
     </script>
 {% endblock %}

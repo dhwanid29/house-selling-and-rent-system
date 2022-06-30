@@ -4,8 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.crypto import get_random_string
 from django.views import View
-from jwt import InvalidSignatureError, DecodeError
-
+from jwt import InvalidSignatureError, DecodeError, ExpiredSignatureError
 
 from accounts.models import User
 from chat.models import Message, Room
@@ -24,8 +23,8 @@ class UserValidationView(View):
             valid_data = jwt.decode(jwt=token, key=settings.SECRET_KEY, algorithms=['HS256'])
             validated_user = valid_data['user_id']
             request.session['user_id'] = validated_user
-        except DecodeError as e :
-            error = "Invalid Token, Please enter valid Token"
+        except (DecodeError, InvalidSignatureError, ExpiredSignatureError)  as error :
+            # error = "Invalid Token, Please enter valid Token"
             return render(request, 'chat/user_validation.html', {'error': error})
         return redirect('receivers')
 
