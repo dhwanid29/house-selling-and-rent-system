@@ -182,6 +182,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'
 
+CSRF_TRUSTED_ORIGINS = ['https://house-selling-and-rent-system.herokuapp.com']
+
 # Email Configuration
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
