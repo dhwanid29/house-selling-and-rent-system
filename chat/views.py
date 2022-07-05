@@ -24,7 +24,6 @@ class UserValidationView(View):
             validated_user = valid_data['user_id']
             request.session['user_id'] = validated_user
         except (DecodeError, InvalidSignatureError, ExpiredSignatureError)  as error :
-            # error = "Invalid Token, Please enter valid Token"
             return render(request, 'chat/user_validation.html', {'error': error})
         return redirect('receivers')
 

@@ -2,7 +2,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from accounts.models import User
-from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, Favourites, FavouritesUser
+from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, Favourites, FavouritesUser, \
+    Preference
 
 
 class AmenitiesSerializer(serializers.ModelSerializer):
@@ -164,3 +165,10 @@ class MyFavouritesSerializer(serializers.ModelSerializer):
 
     def get_house(self, obj):
         return obj.favourites.house.id
+
+
+class PreferencesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Preference
+        fields = ['user', 'residence_name', 'no_of_bedrooms', 'state', 'city', 'selling_choice']

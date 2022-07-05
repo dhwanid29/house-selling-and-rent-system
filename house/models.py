@@ -100,6 +100,9 @@ class Likes(models.Model):
     user = models.ManyToManyField(User, through="LikesUser")
     house = models.ForeignKey(House, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.house
+
 
 class LikesUser(models.Model):
     """
@@ -107,6 +110,9 @@ class LikesUser(models.Model):
     """
     likes = models.ForeignKey(Likes, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.username
 
 
 class Favourites(models.Model):
@@ -128,3 +134,13 @@ class FavouritesUser(models.Model):
         return self.user.username
 
 
+class Preference(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    residence_name = models.CharField(max_length=255)
+    no_of_bedrooms = models.IntegerField()
+    state = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    selling_choice = models.CharField(max_length=50, choices=BUY_OR_SELL_CHOICES, default="Sell")
+
+    def __str__(self):
+        return self.city

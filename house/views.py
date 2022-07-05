@@ -1,25 +1,19 @@
-from warnings import filters
-
-import django_filters
-from django.db.models import Q
-from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q, Count
 from rest_framework import generics, mixins, status, viewsets
-from rest_framework.exceptions import ValidationError
-from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-
 from accounts.models import User
 from accounts.utils import EmailSend
 from constants import NO_ACCESS_UPDATE_REVIEW, NO_ACCESS_UPDATE_HOUSE_IMAGE, DISLIKE_ERROR, LIKE_ERROR, FAVOURITE_ERROR, \
     REMOVE_FAVOURITES_ERROR, EMAIL_BODY_FAVOURITES, EMAIL_SUBJECT_FAVOURITES, NOT_REGISTERED, HOUSE_DOES_NOT_EXIST, \
     HOUSE_CREATED, HOUSE_UPDATED, REVIEW_CREATED, REVIEW_UPDATED, LIKED, UNLIKED, ADDED_TO_FAVOURITES, \
-    REMOVED_FAVOURITES
+    REMOVED_FAVOURITES, PREFERENCE_CREATED, PREFERENCE_UPDATED, NO_ACCESS_UPDATE_PREFERENCE, DATA_RETRIEVED, \
+    EMAIL_BODY_FAV_SELLER, EMAIL_SUBJECT_FAV_SELLER
 from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, LikesUser, Favourites, \
-    FavouritesUser
+    FavouritesUser, Preference
 from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
     SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer, LikesSerializer, FavouritesSerializer, \
-    MyFavouritesSerializer, HouseUpdateSerializer, HouseImageUpdateSerializer
+    MyFavouritesSerializer, HouseUpdateSerializer, HouseImageUpdateSerializer, PreferencesSerializer
 
 
 class AddAmenities(generics.CreateAPIView):
@@ -40,14 +34,14 @@ class AmenitiesView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.D
     lookup_field = 'id'
     permission_classes = [IsAdminUser]
 
-    def get(self, request, id=None):
+    def get(self, request, *args, **kwargs):
         return self.retrieve(request)
 
-    def put(self, request, id=None):
-        return self.update(request, id)
+    def put(self, request, *args, **kwargs):
+        return self.update(request)
 
-    def delete(self, request, id):
-        return self.destroy(request, id)
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request)
 
 
 class HouseViewSet(viewsets.ModelViewSet):
@@ -61,6 +55,26 @@ class HouseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         request.data['user'] = request.user.id
+        get_sellers = House.objects.filter(user=request.user.id)
+        if get_sellers:
+            get_fav_houses = []
+            for i in get_sellers:
+                query = Favourites.objects.filter(house=i.id).first()
+                if query:
+                    get_fav_houses.append(query.id)
+            print(get_fav_houses)
+            queryset = FavouritesUser.objects.filter(favourites__in=get_fav_houses).distinct('user')
+
+            for i in queryset:
+                user_email = User.objects.filter(username=i).first()
+                # Send Mail
+                data = {
+                    'subject': EMAIL_SUBJECT_FAV_SELLER,
+                    'body': EMAIL_BODY_FAV_SELLER,
+                    'to_email': user_email
+                }
+                EmailSend.send_email(data)
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -286,7 +300,7 @@ class BuyerHouseRetrieveView(generics.GenericAPIView, mixins.RetrieveModelMixin)
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
 
 
 class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
@@ -346,7 +360,7 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
             queryset = queryset.order_by('-price', '-created_date')
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
 
 
 class HouseForRentRetrieveView(generics.GenericAPIView, mixins.RetrieveModelMixin):
@@ -361,7 +375,7 @@ class HouseForRentRetrieveView(generics.GenericAPIView, mixins.RetrieveModelMixi
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
 
 
 class HouseForRentListView(generics.GenericAPIView, mixins.ListModelMixin):
@@ -421,7 +435,7 @@ class HouseForRentListView(generics.GenericAPIView, mixins.ListModelMixin):
             queryset = queryset.order_by('-price', '-created_date')
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
 
 
 class FavouritesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
@@ -435,4 +449,100 @@ class FavouritesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
     def get(self, request, *args, **kwargs):
         favs = FavouritesUser.objects.filter(user=request.user.id)
         favourites_data = MyFavouritesSerializer(favs, many=True)
-        return Response({'data': favourites_data.data}, status=status.HTTP_200_OK)
+        return Response({'data': favourites_data.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
+
+
+class PreferencesViewSet(viewsets.ModelViewSet):
+    """
+    View to insert, update, view and delete preferences
+    """
+    serializer_class = PreferencesSerializer
+    queryset = Preference.objects.all()
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'user'
+
+    def create(self, request, *args, **kwargs):
+        request.data['user'] = request.user.id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({'data': serializer.data, 'msg': PREFERENCE_CREATED}, status=status.HTTP_201_CREATED,
+                        headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.user.id == request.user.id:
+            serializer = PreferencesSerializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response({'data': serializer.data, 'msg': PREFERENCE_UPDATED}, status=status.HTTP_200_OK)
+        return Response({'msg': NO_ACCESS_UPDATE_PREFERENCE}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RecommendedHousesListView(generics.GenericAPIView, mixins.ListModelMixin):
+    """
+    View to display Recommended Houses to users according to their preferences
+    """
+    serializer_class = PreferencesSerializer
+    lookup_field = 'user'
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        get_user_preference = Preference.objects.filter(user=request.user.id).first()
+        print(get_user_preference)
+        recommendations = House.objects.filter(Q(residence_name=get_user_preference.residence_name,
+                                               no_of_bedrooms=get_user_preference.no_of_bedrooms,
+                                               state=get_user_preference.state) |
+                                               Q(residence_name=get_user_preference.residence_name,
+                                               no_of_bedrooms=get_user_preference.no_of_bedrooms,
+                                               city=get_user_preference.city) |
+                                               Q(residence_name=get_user_preference.residence_name,
+                                                 no_of_bedrooms=get_user_preference.no_of_bedrooms,
+                                                 selling_choice=get_user_preference.selling_choice) |
+                                               Q(residence_name=get_user_preference.residence_name,
+                                                 city=get_user_preference.city,
+                                                 state=get_user_preference.state) |
+                                               Q(residence_name=get_user_preference.residence_name,
+                                                 city=get_user_preference.city,
+                                                 selling_choice=get_user_preference.selling_choice) |
+                                               Q(residence_name=get_user_preference.residence_name,
+                                                 selling_choice=get_user_preference.selling_choice,
+                                                 state=get_user_preference.state) |
+                                               Q(no_of_bedrooms=get_user_preference.no_of_bedrooms,
+                                                 city=get_user_preference.city,
+                                                 state=get_user_preference.state) |
+                                               Q(selling_choice=get_user_preference.selling_choice,
+                                                 no_of_bedrooms=get_user_preference.no_of_bedrooms,
+                                                 state=get_user_preference.state) |
+                                               Q(city=get_user_preference.city,
+                                                 no_of_bedrooms=get_user_preference.no_of_bedrooms,
+                                                 selling_choice=get_user_preference.selling_choice) |
+                                               Q(state=get_user_preference.state,
+                                                 city=get_user_preference.city,
+                                                 selling_choice=get_user_preference.selling_choice)
+                                               )
+        print(recommendations)
+        house_data = HouseSerializer(recommendations, many=True)
+        return Response({'data': house_data.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
+
+
+class TrendingHousesView(generics.GenericAPIView, mixins.ListModelMixin):
+    """
+    View to display trending houses to users(Most Liked Houses)
+    """
+    serializer_class = LikesSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        trending_houses_dict = {}
+        rec = Likes.objects.all()
+        for i in rec:
+            get_trendy_houses = LikesUser.objects.filter(likes=i.id).annotate(liked_houses=Count('likes')).order_by('liked_houses')
+            trending_houses_dict[i.house.id] = len(get_trendy_houses)
+        trendy_houses = dict(sorted(trending_houses_dict.items(), key=lambda item: item[1], reverse=True)).keys()
+        trending_houses_list = list(trendy_houses)
+        queryset = House.objects.filter(id__in=trending_houses_list)
+        query = sorted(queryset, key=lambda i: trending_houses_list.index(i.id))
+        house_data = HouseSerializer(query, many=True)
+        return Response({'data': house_data.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
