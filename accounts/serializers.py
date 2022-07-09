@@ -8,7 +8,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from accounts.utils import EmailSend
 from accounts.validations import validate_password
 from constants import PASSWORD_DO_NOT_MATCH, HOST_URL, EMAIL_BODY, EMAIL_SUBJECT, NOT_REGISTERED, INVALID_TOKEN, \
-    CURRENT_PASSWORD_CHECK
+    CURRENT_PASSWORD_CHECK, CURRENT_PASSWORD_AND_CHANGE_PASSWORD_ARE_SAME
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -71,10 +71,10 @@ class UserChangePasswordSerializer(serializers.Serializer):
         password = attrs.get('password')
         password2 = attrs.get('password2')
         user = self.context.get('user')
-
         if not check_password(current_password, user.password):
             raise serializers.ValidationError(CURRENT_PASSWORD_CHECK)
-
+        if current_password == password and current_password == password2:
+            raise serializers.ValidationError(CURRENT_PASSWORD_AND_CHANGE_PASSWORD_ARE_SAME)
         if password != password2:
             raise serializers.ValidationError(PASSWORD_DO_NOT_MATCH)
         user.set_password(password)

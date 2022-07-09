@@ -2,7 +2,9 @@ import re
 from rest_framework.exceptions import ValidationError
 
 from constants import PASSWORD_VALIDATION_ERROR, USERNAME_SHORT_ERROR, USERNAME_LONG_ERROR, ONLY_LOWERCASE, \
-    NO_SPACES_ALLOWED, INVALID_NAME, NAME_NO_SPACES_ALLOWED
+    NO_SPACES_ALLOWED, INVALID_NAME, NAME_NO_SPACES_ALLOWED, PASSWORD_SHORT_LENGTH_ERROR, PASSWORD_LONG_LENGTH_ERROR, \
+    PASSWORD_CONTAINS_NO_DIGIT_ERROR, PASSWORD_CONTAINS_NO_UPPERCASE_ERROR, PASSWORD_CONTAINS_NO_LOWERCASE_ERROR, \
+    PASSWORD_CONTAINS_NO_SPECIAL_CHARACTER_ERROR
 
 
 def validate_password(password):
@@ -11,12 +13,33 @@ def validate_password(password):
     :param password: takes in password and validates it
     :return: validated password
     """
-    reg = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%#?&])[A-Za-z\d@$!#%*?&]{8,20}$"
 
-    if re.fullmatch(reg, password):
-        return password
-    else:
-        raise ValidationError(PASSWORD_VALIDATION_ERROR)
+    SpecialSymbol = ['$', '@', '#', '%']
+
+    if len(password) < 6:
+        print()
+        raise ValidationError(PASSWORD_SHORT_LENGTH_ERROR)
+
+    if len(password) > 20:
+        print()
+        raise ValidationError(PASSWORD_LONG_LENGTH_ERROR)
+
+    if not any(char.isdigit() for char in password):
+        print()
+        raise ValidationError(PASSWORD_CONTAINS_NO_DIGIT_ERROR)
+
+    if not any(char.isupper() for char in password):
+        print()
+        raise ValidationError(PASSWORD_CONTAINS_NO_UPPERCASE_ERROR)
+
+    if not any(char.islower() for char in password):
+        print()
+        raise ValidationError(PASSWORD_CONTAINS_NO_LOWERCASE_ERROR)
+
+    if not any(char in SpecialSymbol for char in password):
+        print()
+        raise ValidationError(PASSWORD_CONTAINS_NO_SPECIAL_CHARACTER_ERROR)
+    return password
 
 
 def validate_username(username):

@@ -103,7 +103,21 @@ class HouseReviewForHouseDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HouseReview
-        fields = ['review']
+        fields = ['review', 'user']
+
+
+class LikesSerializerForHouseDetail(serializers.ModelSerializer):
+
+    class Meta:
+        model = Likes
+        fields = ['user']
+
+
+class LikesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Likes
+        fields = ['user', 'house']
 
 
 class HouseSerializer(serializers.ModelSerializer):
@@ -112,10 +126,11 @@ class HouseSerializer(serializers.ModelSerializer):
     """
     house_image_set = HouseImageForHouseDetailSerializer(many=True, read_only=True)
     house_review_set = HouseReviewForHouseDetailSerializer(many=True, read_only=True)
+    house_likes_set = LikesSerializerForHouseDetail(many=True, read_only=True)
 
     class Meta:
         model = House
-        fields = ['house_image_set', 'house_review_set', 'user', 'amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
+        fields = ['house_image_set', 'house_review_set', 'house_likes_set', 'user', 'amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
                   'no_of_building', 'state', 'city', 'sqft', 'selling_choice', 'possession', 'project_status']
 
 
@@ -125,19 +140,13 @@ class HouseUpdateSerializer(serializers.ModelSerializer):
     """
     house_image_set = HouseImageForHouseDetailSerializer(many=True, read_only=True)
     house_review_set = HouseReviewForHouseDetailSerializer(many=True, read_only=True)
+    house_likes_set = LikesSerializerForHouseDetail(many=True, read_only=True)
 
     class Meta:
         model = House
-        fields = ['house_image_set', 'house_review_set', 'amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
+        fields = ['house_image_set', 'house_review_set', 'house_likes_set', 'amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
                   'no_of_building', 'state', 'city', 'sqft', 'selling_choice', 'possession', 'project_status',
                   'is_available']
-
-
-class LikesSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Likes
-        fields = ['user', 'house']
 
 
 class FavouritesSerializer(serializers.ModelSerializer):

@@ -8,7 +8,8 @@ from constants import NO_ACCESS_UPDATE_REVIEW, NO_ACCESS_UPDATE_HOUSE_IMAGE, DIS
     REMOVE_FAVOURITES_ERROR, EMAIL_BODY_FAVOURITES, EMAIL_SUBJECT_FAVOURITES, NOT_REGISTERED, HOUSE_DOES_NOT_EXIST, \
     HOUSE_CREATED, HOUSE_UPDATED, REVIEW_CREATED, REVIEW_UPDATED, LIKED, UNLIKED, ADDED_TO_FAVOURITES, \
     REMOVED_FAVOURITES, PREFERENCE_CREATED, PREFERENCE_UPDATED, NO_ACCESS_UPDATE_PREFERENCE, DATA_RETRIEVED, \
-    EMAIL_BODY_FAV_SELLER, EMAIL_SUBJECT_FAV_SELLER
+    EMAIL_BODY_FAV_SELLER, EMAIL_SUBJECT_FAV_SELLER, AMENITIES_CREATED, AMENITIES_UPDATED, AMENITIES_VIEW, \
+    AMENITIES_DELETE, REVIEW_ALREADY_CREATED, PREFERENCE_ALREADY_CREATED
 from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, LikesUser, Favourites, \
     FavouritesUser, Preference
 from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewSerializer, HouseReviewUpdateSerializer, \
@@ -16,32 +17,91 @@ from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewS
     MyFavouritesSerializer, HouseUpdateSerializer, HouseImageUpdateSerializer, PreferencesSerializer
 
 
-class AddAmenities(generics.CreateAPIView):
+class AmenitiesCreate(generics.GenericAPIView, mixins.CreateModelMixin):
     """
-    View to Add Amenities
-    """
-    serializer_class = AmenitiesSerializer
-    permission_classes = [IsAdminUser]
-
-
-class AmenitiesView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
-                    mixins.UpdateModelMixin):
-    """
-    View to get, update and delete amenities
+    View to add, update, delete Amenities
     """
     serializer_class = AmenitiesSerializer
     queryset = Amenities.objects.all()
-    lookup_field = 'id'
     permission_classes = [IsAdminUser]
 
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request)
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({'data': serializer.data, 'msg': AMENITIES_CREATED}, status=status.HTTP_201_CREATED,
+                        headers=headers)
+
+
+class AmenitiesUpdateDelete(generics.GenericAPIView, mixins.UpdateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin):
+    """
+    View to update, delete Amenities
+    """
+    serializer_class = AmenitiesSerializer
+    queryset = Amenities.objects.all()
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
 
     def put(self, request, *args, **kwargs):
-        return self.update(request)
+        print('hrey')
+        instance = self.get_object()
+        serializer = AmenitiesSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({'data': serializer.data, 'msg': AMENITIES_UPDATED}, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
-        return self.destroy(request)
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({'msg': AMENITIES_DELETE}, status=status.HTTP_204_NO_CONTENT)
+
+
+class AmenitiesViewList(generics.GenericAPIView, mixins.ListModelMixin):
+    """
+    View to view Amenities
+    """
+    serializer_class = AmenitiesSerializer
+    queryset = Amenities.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({'data': serializer.data, 'msg': AMENITIES_VIEW}, status=status.HTTP_200_OK)
+
+# class AddAmenities(generics.CreateAPIView):
+#     """
+#     View to Add Amenities
+#     """
+#     serializer_class = AmenitiesSerializer
+#     permission_classes = [IsAdminUser]
+#
+#
+# class AmenitiesView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
+#                     mixins.UpdateModelMixin):
+#     """
+#     View to get, update and delete amenities
+#     """
+#     serializer_class = AmenitiesSerializer
+#     queryset = Amenities.objects.all()
+#     lookup_field = 'id'
+#     permission_classes = [IsAdminUser]
+#
+#     def get(self, request, *args, **kwargs):
+#         return self.retrieve(request)
+#
+#     def put(self, request, *args, **kwargs):
+#         return self.update(request)
+#
+#     def delete(self, request, *args, **kwargs):
+#         return self.destroy(request)
 
 
 class HouseViewSet(viewsets.ModelViewSet):
@@ -99,10 +159,12 @@ class SiteReviewViewSet(viewsets.ModelViewSet):
     """
     serializer_class = SiteReviewSerializer
     queryset = SiteReview.objects.all()
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
+    lookup_field = 'user'
 
     def create(self, request, *args, **kwargs):
+        get_user = SiteReview.objects.filter(user=request.user.id).first()
+        if get_user:
+            return Response({'msg': REVIEW_ALREADY_CREATED}, status=status.HTTP_400_BAD_REQUEST)
         request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -133,9 +195,13 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         get_house = request.data.get('house')
-        find_house = House.objects.filter(id=get_house)
+        find_house = House.objects.filter(id=get_house).first()
+        print(find_house.id, 'dsdcs')
         if not find_house:
             return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
+        get_user = HouseReview.objects.filter(user=request.user.id, house=find_house.id).first()
+        if get_user:
+            return Response({'msg': REVIEW_ALREADY_CREATED}, status=status.HTTP_400_BAD_REQUEST)
         request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -327,7 +393,7 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
         date_before = request.GET.get('date_before')
         date_after = request.GET.get('date_after')
         queryset = House.objects.filter(is_available=True).filter(selling_choice="Sell")
-
+    # todo self.queryset
         if filter_city:
             queryset = queryset.filter(city=filter_city).order_by('-created_date')
         if filter_state:
@@ -462,6 +528,9 @@ class PreferencesViewSet(viewsets.ModelViewSet):
     lookup_field = 'user'
 
     def create(self, request, *args, **kwargs):
+        get_user = Preference.objects.filter(user=request.user.id).first()
+        if get_user:
+            return Response({'msg': PREFERENCE_ALREADY_CREATED}, status=status.HTTP_400_BAD_REQUEST)
         request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -490,39 +559,11 @@ class RecommendedHousesListView(generics.GenericAPIView, mixins.ListModelMixin):
 
     def get(self, request, *args, **kwargs):
         get_user_preference = Preference.objects.filter(user=request.user.id).first()
-        print(get_user_preference)
-        recommendations = House.objects.filter(Q(residence_name=get_user_preference.residence_name,
+        recommendations = House.objects.filter(residence_name=get_user_preference.residence_name,
                                                no_of_bedrooms=get_user_preference.no_of_bedrooms,
-                                               state=get_user_preference.state) |
-                                               Q(residence_name=get_user_preference.residence_name,
-                                               no_of_bedrooms=get_user_preference.no_of_bedrooms,
-                                               city=get_user_preference.city) |
-                                               Q(residence_name=get_user_preference.residence_name,
-                                                 no_of_bedrooms=get_user_preference.no_of_bedrooms,
-                                                 selling_choice=get_user_preference.selling_choice) |
-                                               Q(residence_name=get_user_preference.residence_name,
-                                                 city=get_user_preference.city,
-                                                 state=get_user_preference.state) |
-                                               Q(residence_name=get_user_preference.residence_name,
-                                                 city=get_user_preference.city,
-                                                 selling_choice=get_user_preference.selling_choice) |
-                                               Q(residence_name=get_user_preference.residence_name,
-                                                 selling_choice=get_user_preference.selling_choice,
-                                                 state=get_user_preference.state) |
-                                               Q(no_of_bedrooms=get_user_preference.no_of_bedrooms,
-                                                 city=get_user_preference.city,
-                                                 state=get_user_preference.state) |
-                                               Q(selling_choice=get_user_preference.selling_choice,
-                                                 no_of_bedrooms=get_user_preference.no_of_bedrooms,
-                                                 state=get_user_preference.state) |
-                                               Q(city=get_user_preference.city,
-                                                 no_of_bedrooms=get_user_preference.no_of_bedrooms,
-                                                 selling_choice=get_user_preference.selling_choice) |
-                                               Q(state=get_user_preference.state,
-                                                 city=get_user_preference.city,
-                                                 selling_choice=get_user_preference.selling_choice)
-                                               )
-        print(recommendations)
+                                               state=get_user_preference.state,
+                                               city=get_user_preference.city,
+                                               selling_choice=get_user_preference.selling_choice)
         house_data = HouseSerializer(recommendations, many=True)
         return Response({'data': house_data.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
 

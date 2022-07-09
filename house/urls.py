@@ -1,8 +1,8 @@
 from django.urls import path
-from house.views import AmenitiesView, AddAmenities, HouseReviewViewSet, SiteReviewViewSet, \
+from house.views import HouseReviewViewSet, SiteReviewViewSet, \
     HouseImageViewSet, HouseViewSet, LikesViewSet, FavouritesViewSet, BuyerHouseListView, BuyerHouseRetrieveView, \
     FavouritesByUser, HouseForRentListView, HouseForRentRetrieveView, PreferencesViewSet, RecommendedHousesListView, \
-    TrendingHousesView
+    TrendingHousesView, AmenitiesViewList, AmenitiesUpdateDelete, AmenitiesCreate
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -16,8 +16,9 @@ router.register('preferences', PreferencesViewSet, basename='preferences')
 
 
 urlpatterns = [
-    path('add_amenities/', AddAmenities.as_view(), name="add_amenities"),
-    path('amenities/<int:id>/', AmenitiesView.as_view(), name="amenities"),
+    path('view_amenities/', AmenitiesViewList.as_view(), name="view_amenities"),
+    path('amenities/', AmenitiesCreate.as_view(), name="add_amenities"),
+    path('amenities/<int:id>/', AmenitiesUpdateDelete.as_view(), name="amenities_update"),
     path('available_houses/', BuyerHouseListView.as_view(), name="available_houses"),
     path('available_houses/<int:id>/', BuyerHouseRetrieveView.as_view(), name="available_houses"),
     path('my_favourites/<int:user>/', FavouritesByUser.as_view(), name="my_favourites"),
