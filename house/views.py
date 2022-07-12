@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from accounts.models import User
 from accounts.utils import EmailSend
+from accounts.validations import validate_date, validate_price
 from constants import NO_ACCESS_UPDATE_REVIEW, NO_ACCESS_UPDATE_HOUSE_IMAGE, DISLIKE_ERROR, LIKE_ERROR, FAVOURITE_ERROR, \
     REMOVE_FAVOURITES_ERROR, EMAIL_BODY_FAVOURITES, EMAIL_SUBJECT_FAVOURITES, NOT_REGISTERED, HOUSE_DOES_NOT_EXIST, \
     HOUSE_CREATED, HOUSE_UPDATED, REVIEW_CREATED, REVIEW_UPDATED, LIKED, UNLIKED, ADDED_TO_FAVOURITES, \
@@ -44,7 +45,6 @@ class AmenitiesUpdateDelete(generics.GenericAPIView, mixins.UpdateModelMixin, mi
     lookup_field = 'id'
 
     def put(self, request, *args, **kwargs):
-        print('hrey')
         instance = self.get_object()
         serializer = AmenitiesSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -76,33 +76,6 @@ class AmenitiesViewList(generics.GenericAPIView, mixins.ListModelMixin):
         serializer = self.get_serializer(queryset, many=True)
         return Response({'data': serializer.data, 'msg': AMENITIES_VIEW}, status=status.HTTP_200_OK)
 
-# class AddAmenities(generics.CreateAPIView):
-#     """
-#     View to Add Amenities
-#     """
-#     serializer_class = AmenitiesSerializer
-#     permission_classes = [IsAdminUser]
-#
-#
-# class AmenitiesView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.DestroyModelMixin,
-#                     mixins.UpdateModelMixin):
-#     """
-#     View to get, update and delete amenities
-#     """
-#     serializer_class = AmenitiesSerializer
-#     queryset = Amenities.objects.all()
-#     lookup_field = 'id'
-#     permission_classes = [IsAdminUser]
-#
-#     def get(self, request, *args, **kwargs):
-#         return self.retrieve(request)
-#
-#     def put(self, request, *args, **kwargs):
-#         return self.update(request)
-#
-#     def delete(self, request, *args, **kwargs):
-#         return self.destroy(request)
-
 
 class HouseViewSet(viewsets.ModelViewSet):
     """
@@ -122,7 +95,6 @@ class HouseViewSet(viewsets.ModelViewSet):
                 query = Favourites.objects.filter(house=i.id).first()
                 if query:
                     get_fav_houses.append(query.id)
-            print(get_fav_houses)
             queryset = FavouritesUser.objects.filter(favourites__in=get_fav_houses).distinct('user')
 
             for i in queryset:
@@ -196,7 +168,6 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         get_house = request.data.get('house')
         find_house = House.objects.filter(id=get_house).first()
-        print(find_house.id, 'dsdcs')
         if not find_house:
             return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
         get_user = HouseReview.objects.filter(user=request.user.id, house=find_house.id).first()
@@ -381,7 +352,11 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
     def get(self, request, *args, **kwargs):
         search = request.GET.get('search')
         price_min = request.GET.get('price_min')
+        if price_min:
+            validate_price(price_min)
         price_max = request.GET.get('price_max')
+        if price_max:
+            validate_price(price_max)
         sort_by_price_asc = request.GET.get('sort_by_price_asc')
         sort_by_price_desc = request.GET.get('sort_by_price_desc')
         filter_city = request.GET.get('filter_city')
@@ -391,39 +366,41 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
         filter_possession = request.GET.get('filter_possession')
         filter_project_status = request.GET.get('filter_project_status')
         date_before = request.GET.get('date_before')
+        if date_before:
+            validate_date(date_before)
         date_after = request.GET.get('date_after')
-        queryset = House.objects.filter(is_available=True).filter(selling_choice="Sell")
-    # todo self.queryset
+        if date_after:
+            validate_date(date_after)
         if filter_city:
-            queryset = queryset.filter(city=filter_city).order_by('-created_date')
+            queryset = self.queryset.filter(city=filter_city).order_by('-created_date')
         if filter_state:
-            queryset = queryset.filter(state=filter_state).order_by('-created_date')
+            queryset = self.queryset.filter(state=filter_state).order_by('-created_date')
         if filter_amenities:
-            queryset = queryset.filter(amenities=filter_amenities).order_by('-created_date')
+            queryset = self.queryset.filter(amenities=filter_amenities).order_by('-created_date')
         if filter_no_of_bedrooms:
-            queryset = queryset.filter(no_of_bedrooms=filter_no_of_bedrooms).order_by('-created_date')
+            queryset = self.queryset.filter(no_of_bedrooms=filter_no_of_bedrooms).order_by('-created_date')
         if filter_possession:
-            queryset = queryset.filter(possession=filter_possession).order_by('-created_date')
+            queryset = self.queryset.filter(possession=filter_possession).order_by('-created_date')
         if filter_project_status:
-            queryset = queryset.filter(project_status=filter_project_status).order_by('-created_date')
+            queryset = self.queryset.filter(project_status=filter_project_status).order_by('-created_date')
         if search:
-            queryset = queryset.filter(Q(city__contains=search) | Q(state__contains=search)).order_by('-created_date')
+            queryset = self.queryset.filter(Q(city__contains=search) | Q(state__contains=search)).order_by('-created_date')
         if price_min and price_max:
-            queryset = queryset.filter(price__gte=price_min, price__lte=price_max)
+            queryset = self.queryset.filter(price__gte=price_min, price__lte=price_max)
         elif price_max:
-            queryset = queryset.filter(price__lte=price_max)
+            queryset = self.queryset.filter(price__lte=price_max)
         elif price_min:
-            queryset = queryset.filter(price__gte=price_min)
+            queryset = self.queryset.filter(price__gte=price_min)
         if date_after and date_before:
-            queryset = queryset.filter(created_date__gte=date_after, created_date__lte=date_before)
+            queryset = self.queryset.filter(created_date__gte=date_after, created_date__lte=date_before)
         elif date_after:
-            queryset = queryset.filter(created_date__gte=date_after)
+            queryset = self.queryset.filter(created_date__gte=date_after)
         elif date_before:
-            queryset = queryset.filter(created_date__lte=date_before)
+            queryset = self.queryset.filter(created_date__lte=date_before)
         if sort_by_price_asc:
-            queryset = queryset.order_by('price', '-created_date')
+            queryset = self.queryset.order_by('price', '-created_date')
         elif sort_by_price_desc:
-            queryset = queryset.order_by('-price', '-created_date')
+            queryset = self.queryset.order_by('-price', '-created_date')
 
         serializer = self.get_serializer(queryset, many=True)
         return Response({'data': serializer.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
@@ -452,11 +429,16 @@ class HouseForRentListView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = HouseSerializer
     lookup_field = 'id'
     permission_classes = [IsAuthenticated]
+    queryset = House.objects.filter(is_available=True).filter(selling_choice="Rent")
 
     def get(self, request, *args, **kwargs):
         search = request.GET.get('search')
         price_min = request.GET.get('price_min')
+        if price_min:
+            validate_price(price_min)
         price_max = request.GET.get('price_max')
+        if price_max:
+            validate_price(price_max)
         sort_by_price_asc = request.GET.get('sort_by_price_asc')
         sort_by_price_desc = request.GET.get('sort_by_price_desc')
         filter_city = request.GET.get('filter_city')
@@ -466,39 +448,42 @@ class HouseForRentListView(generics.GenericAPIView, mixins.ListModelMixin):
         filter_possession = request.GET.get('filter_possession')
         filter_project_status = request.GET.get('filter_project_status')
         date_before = request.GET.get('date_before')
+        if date_before:
+            validate_date(date_before)
         date_after = request.GET.get('date_after')
-        queryset = House.objects.filter(is_available=True).filter(selling_choice="Rent")
+        if date_after:
+            validate_date(date_after)
 
         if filter_city:
-            queryset = queryset.filter(city=filter_city).order_by('-created_date')
+            queryset = self.queryset.filter(city=filter_city).order_by('-created_date')
         if filter_state:
-            queryset = queryset.filter(state=filter_state).order_by('-created_date')
+            queryset = self.queryset.filter(state=filter_state).order_by('-created_date')
         if filter_amenities:
-            queryset = queryset.filter(amenities=filter_amenities).order_by('-created_date')
+            queryset = self.queryset.filter(amenities=filter_amenities).order_by('-created_date')
         if filter_no_of_bedrooms:
-            queryset = queryset.filter(no_of_bedrooms=filter_no_of_bedrooms).order_by('-created_date')
+            queryset = self.queryset.filter(no_of_bedrooms=filter_no_of_bedrooms).order_by('-created_date')
         if filter_possession:
-            queryset = queryset.filter(possession=filter_possession).order_by('-created_date')
+            queryset = self.queryset.filter(possession=filter_possession).order_by('-created_date')
         if filter_project_status:
-            queryset = queryset.filter(project_status=filter_project_status).order_by('-created_date')
+            queryset = self.queryset.filter(project_status=filter_project_status).order_by('-created_date')
         if search:
-            queryset = queryset.filter(Q(city__contains=search) | Q(state__contains=search)).order_by('-created_date')
+            queryset = self.queryset.filter(Q(city__contains=search) | Q(state__contains=search)).order_by('-created_date')
         if price_min and price_max:
-            queryset = queryset.filter(price__gte=price_min, price__lte=price_max)
+            queryset = self.queryset.filter(price__gte=price_min, price__lte=price_max)
         elif price_max:
-            queryset = queryset.filter(price__lte=price_max)
+            queryset = self.queryset.filter(price__lte=price_max)
         elif price_min:
-            queryset = queryset.filter(price__gte=price_min)
+            queryset = self.queryset.filter(price__gte=price_min)
         if date_after and date_before:
-            queryset = queryset.filter(created_date__gte=date_after, created_date__lte=date_before)
+            queryset = self.queryset.filter(created_date__gte=date_after, created_date__lte=date_before)
         elif date_after:
-            queryset = queryset.filter(created_date__gte=date_after)
+            queryset = self.queryset.filter(created_date__gte=date_after)
         elif date_before:
-            queryset = queryset.filter(created_date__lte=date_before)
+            queryset = self.queryset.filter(created_date__lte=date_before)
         if sort_by_price_asc:
-            queryset = queryset.order_by('price', '-created_date')
+            queryset = self.queryset.order_by('price', '-created_date')
         elif sort_by_price_desc:
-            queryset = queryset.order_by('-price', '-created_date')
+            queryset = self.queryset.order_by('-price', '-created_date')
 
         serializer = self.get_serializer(queryset, many=True)
         return Response({'data': serializer.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)

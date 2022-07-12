@@ -98,7 +98,7 @@ class Likes(models.Model):
     Model to Like House
     """
     user = models.ManyToManyField(User, through="LikesUser")
-    house = models.ForeignKey(House, on_delete=models.CASCADE)
+    house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='house_likes_set')
 
     def __str__(self):
         return self.house

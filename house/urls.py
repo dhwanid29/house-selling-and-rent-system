@@ -26,5 +26,6 @@ urlpatterns = [
     path('available_for_rent/<int:id>/', HouseForRentRetrieveView.as_view(), name="available_for_rent_detail"),
     path('recommended_houses/<int:user>/', RecommendedHousesListView.as_view(), name="recommended_houses"),
     path('trending_houses/', TrendingHousesView.as_view(), name="trending_houses"),
+    path('available_houses_filter/', BuyerHouseListView.as_view(), name="available_houses_filter"),
 ] + router.urls
 

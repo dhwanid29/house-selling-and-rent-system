@@ -1,10 +1,11 @@
+import datetime
 import re
 from rest_framework.exceptions import ValidationError
 
 from constants import PASSWORD_VALIDATION_ERROR, USERNAME_SHORT_ERROR, USERNAME_LONG_ERROR, ONLY_LOWERCASE, \
     NO_SPACES_ALLOWED, INVALID_NAME, NAME_NO_SPACES_ALLOWED, PASSWORD_SHORT_LENGTH_ERROR, PASSWORD_LONG_LENGTH_ERROR, \
     PASSWORD_CONTAINS_NO_DIGIT_ERROR, PASSWORD_CONTAINS_NO_UPPERCASE_ERROR, PASSWORD_CONTAINS_NO_LOWERCASE_ERROR, \
-    PASSWORD_CONTAINS_NO_SPECIAL_CHARACTER_ERROR
+    PASSWORD_CONTAINS_NO_SPECIAL_CHARACTER_ERROR, DATE_ERROR, PRICE_ERROR
 
 
 def validate_password(password):
@@ -17,29 +18,43 @@ def validate_password(password):
     SpecialSymbol = ['$', '@', '#', '%']
 
     if len(password) < 6:
-        print()
         raise ValidationError(PASSWORD_SHORT_LENGTH_ERROR)
 
     if len(password) > 20:
-        print()
         raise ValidationError(PASSWORD_LONG_LENGTH_ERROR)
 
     if not any(char.isdigit() for char in password):
-        print()
         raise ValidationError(PASSWORD_CONTAINS_NO_DIGIT_ERROR)
 
     if not any(char.isupper() for char in password):
-        print()
         raise ValidationError(PASSWORD_CONTAINS_NO_UPPERCASE_ERROR)
 
     if not any(char.islower() for char in password):
-        print()
         raise ValidationError(PASSWORD_CONTAINS_NO_LOWERCASE_ERROR)
 
     if not any(char in SpecialSymbol for char in password):
-        print()
         raise ValidationError(PASSWORD_CONTAINS_NO_SPECIAL_CHARACTER_ERROR)
     return password
+
+
+def validate_date(date_string):
+    """
+    Function to validate the username
+    :param: takes in date parameter and validates it
+    :return: validated date
+    """
+    date_format = '%Y-%m-%d'
+    try:
+        datetime.datetime.strptime(date_string, date_format)
+    except Exception as e:
+        raise ValidationError(DATE_ERROR)
+
+
+def validate_price(price):
+    if not price.isdecimal():
+        raise ValidationError(PRICE_ERROR)
+    return price
+
 
 
 def validate_username(username):

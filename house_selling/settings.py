@@ -45,12 +45,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'phonenumber_field',
     'corsheaders',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     'django_filters',
     'rest_framework',
     'accounts',
     'house',
     'chat'
 ]
+
+SIMPLE_JWT = {
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': False,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -213,7 +221,7 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
-PASSWORD_RESET_TIMEOUT = 900  # 900 sec = 15 min
+PASSWORD_RESET_TIMEOUT = 900000  # 900 sec = 15 min
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",

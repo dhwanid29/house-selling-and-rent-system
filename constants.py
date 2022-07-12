@@ -15,6 +15,8 @@ NOT_REGISTERED = "You are not a registered user."
 INVALID_TOKEN = "Token is not Valid or Expired."
 CURRENT_PASSWORD_CHECK = "Current password is invalid"
 CURRENT_PASSWORD_AND_CHANGE_PASSWORD_ARE_SAME = "Old password and new password are same"
+EMAIL_BODY_EMAIL_UPDATE = "Click Following Link to LOGIN AGAIN. As a part of email verification"
+EMAIL_SUBJECT_EMAIL_UPDATE = "Please Login again."
 
 # ACCOUNTS VIEW
 
@@ -23,6 +25,7 @@ LOGGED_IN = "Login Successfully!"
 INVALID_EMAIL_OR_PASSWORD = "Email or Password is not valid"
 PASSWORD_CHANGED = "Password Changed Successfully!"
 PASSWORD_RESET_LINK = "Password Reset link send. Please check your Email"
+EMAIL_UPDATE_LINK = "Email sent successfully"
 PASSWORD_RESET_SUCCESSFUL = "Password Reset Successfully"
 LIKE_ERROR = "You have already liked this house"
 DISLIKE_ERROR = "You have not liked this house"
@@ -44,6 +47,8 @@ PASSWORD_CONTAINS_NO_DIGIT_ERROR = "Password should have at least one numeral"
 PASSWORD_CONTAINS_NO_UPPERCASE_ERROR = "Password should have at least one uppercase letter"
 PASSWORD_CONTAINS_NO_LOWERCASE_ERROR = "Password should have at least one lowercase letter"
 PASSWORD_CONTAINS_NO_SPECIAL_CHARACTER_ERROR = "Password should have at least one of the symbols $@#"
+DATE_ERROR = "Incorrect data format, should be YYYY-MM-DD"
+PRICE_ERROR = "Please enter correct price in numbers"
 
 # ACCOUNTS MANAGER
 

@@ -1,14 +1,16 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from accounts.models import User
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
 from accounts.utils import EmailSend
 from accounts.validations import validate_password
 from constants import PASSWORD_DO_NOT_MATCH, HOST_URL, EMAIL_BODY, EMAIL_SUBJECT, NOT_REGISTERED, INVALID_TOKEN, \
-    CURRENT_PASSWORD_CHECK, CURRENT_PASSWORD_AND_CHANGE_PASSWORD_ARE_SAME
+    CURRENT_PASSWORD_CHECK, CURRENT_PASSWORD_AND_CHANGE_PASSWORD_ARE_SAME, EMAIL_BODY_EMAIL_UPDATE, \
+    EMAIL_SUBJECT_EMAIL_UPDATE
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -55,6 +57,74 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['email', 'first_name', 'last_name', 'profile_image']
 
 
+class ResendEmailUpdateLinkSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Resend Email Update View
+    """
+    email = serializers.EmailField(max_length=255)
+
+    class Meta:
+        model = User
+        fields = ['email']
+
+    def validate(self, attrs):
+        try:
+            email = attrs.get('email')
+            user = User.objects.filter(email=email).first()
+            uid = urlsafe_base64_encode(force_bytes(user.id))
+            token = PasswordResetTokenGenerator().make_token(user)
+            link = HOST_URL + '/email_update/' + uid + '/' + token
+            # Send Mail
+            body = EMAIL_BODY_EMAIL_UPDATE + link
+            data = {
+                'subject': EMAIL_SUBJECT_EMAIL_UPDATE,
+                'body': body,
+                'to_email': user.email
+            }
+            EmailSend.send_email(data)
+            return attrs
+        except:
+            raise ValidationError(NOT_REGISTERED)
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for User Profile View
+    """
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'profile_image']
+
+    def validate_email(self, value):
+        if self.instance and value != self.instance.email:
+            return value
+
+
+class UserEmailUpdateSerializer(serializers.Serializer):
+    """
+    Serializer to Login Again after updating email
+    """
+    email = serializers.EmailField(max_length=255)
+    password = serializers.CharField(style={'input_type': 'password'}, validators=[validate_password])
+
+    class Meta:
+        model = User
+        fields = ['email', 'password']
+
+    def validate(self, attrs):
+        try:
+            uid = self.context.get('uid')
+            token = self.context.get('token')
+            id = smart_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(id=id)
+            if not default_token_generator.check_token(user, token):
+                raise ValidationError(INVALID_TOKEN)
+            return attrs
+        except DjangoUnicodeDecodeError:
+            PasswordResetTokenGenerator().check_token(user, token)
+            raise ValidationError(INVALID_TOKEN)
+
+
 class UserChangePasswordSerializer(serializers.Serializer):
     """
     Serializer for User Change Password
@@ -96,11 +166,8 @@ class SendPasswordResetEmailSerializers(serializers.Serializer):
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.id))
-            print('Encoded UID', uid)
             token = PasswordResetTokenGenerator().make_token(user)
-            print('Password Reset Token', token)
             link = HOST_URL + '/reset-password/' + uid + '/' + token
-            print('Password Reset Link', link)
             # Send Mail
             body = EMAIL_BODY + link
             data = {
