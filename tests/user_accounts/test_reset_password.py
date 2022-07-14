@@ -25,7 +25,6 @@ class TestSendPasswordEmail:
             "email": "dhwani@gmail.com",
         }
         response = registered_user.post(reverse('send-reset-password-email'), send_password_email_data)
-        print(response.data, "jhgdschcgkdcdcs")
         assert response.status_code == 200
 
     @pytest.mark.django_db

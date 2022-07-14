@@ -93,7 +93,7 @@ class UserProfileView(APIView):
     def put(self, request):
         user = self.get_object(request)
         old_email = user.email
-        serializer = UserProfileUpdateSerializer(user, data=request.data)
+        serializer = UserProfileUpdateSerializer(user, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
@@ -110,7 +110,7 @@ class UserProfileView(APIView):
                 }
                 EmailSend.send_email(data)
 
-            return Response({'msg': EMAIL_UPDATE_LINK}, status=status.HTTP_200_OK)
+            return Response({'msg': EMAIL_UPDATE_LINK, "data": serializer.data}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):

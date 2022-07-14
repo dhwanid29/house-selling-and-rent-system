@@ -23,7 +23,7 @@ class SiteReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SiteReview
-        fields = ['user', 'review']
+        fields = ['review']
 
 
 class SiteReviewUpdateSerializer(serializers.ModelSerializer):
@@ -43,7 +43,7 @@ class HouseImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HouseImages
-        fields = ['house', 'user', 'house_image']
+        fields = ['house', 'house_image']
 
 
 class HouseImageUpdateSerializer(serializers.ModelSerializer):
@@ -83,7 +83,7 @@ class HouseReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HouseReview
-        fields = ['user', 'house', 'review']
+        fields = ['house', 'review']
 
 
 class HouseImageForHouseDetailSerializer(serializers.ModelSerializer):
@@ -130,7 +130,7 @@ class HouseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = House
-        fields = ['house_image_set', 'house_review_set', 'house_likes_set', 'user', 'amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
+        fields = ['house_image_set', 'house_review_set', 'house_likes_set', 'amenities', 'residence_name', 'address', 'price', 'no_of_bedrooms', 'no_of_lift', 'no_of_floors',
                   'no_of_building', 'state', 'city', 'sqft', 'selling_choice', 'possession', 'project_status']
 
 

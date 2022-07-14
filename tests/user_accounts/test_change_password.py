@@ -27,7 +27,6 @@ class TestChangePassword:
 
     def test_change_password_with_no_data(self, authenticated_client):
         response = authenticated_client.post(reverse('changepassword'))
-        print(response.data, 'sdgchsg')
         assert response.status_code == 400
 
     def test_change_password_with_not_registered_email(self, authenticated_client):
@@ -44,14 +43,23 @@ class TestChangePassword:
             "password2": "Abcd@1234"
         }
         response = authenticated_client.post(reverse('changepassword'), change_password_data)
-        print(response.data, 'sdgchsg')
+        assert response.status_code == 400
+
+    def test_change_password_valid_data_but_same_old_psswd_and_new_psswd(self, authenticated_client):
+        change_password_data = {
+            "current_password": "Abcd@1234",
+            "password": "Abcd@1234",
+            "password2": "Abcd@1234"
+        }
+        # headers = {}
+        response = authenticated_client.post(reverse('changepassword'), change_password_data)
         assert response.status_code == 400
 
     def test_change_password_valid_data(self, authenticated_client):
         change_password_data = {
             "current_password": "Abcd@1234",
-            "password": "Abcd@1234",
-            "password2": "Abcd@1234"
+            "password": "Abcd@12345",
+            "password2": "Abcd@12345"
         }
         # headers = {}
         response = authenticated_client.post(reverse('changepassword'), change_password_data)

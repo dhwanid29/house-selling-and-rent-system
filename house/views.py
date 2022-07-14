@@ -87,7 +87,6 @@ class HouseViewSet(viewsets.ModelViewSet):
     lookup_field = 'id'
 
     def create(self, request, *args, **kwargs):
-        request.data['user'] = request.user.id
         get_sellers = House.objects.filter(user=request.user.id)
         if get_sellers:
             get_fav_houses = []
@@ -109,17 +108,16 @@ class HouseViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        serializer.save(user=request.user)
         headers = self.get_success_headers(serializer.data)
         return Response({'data': serializer.data, 'msg': HOUSE_CREATED}, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
-        request.data['user'] = request.user.id
         instance = self.get_object()
         if instance.user.id == request.user.id:
             serializer = HouseUpdateSerializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+            serializer.save(user=request.user)
 
             return Response({'data': serializer.data, 'msg': HOUSE_UPDATED}, status=status.HTTP_200_OK)
         return Response({'msg': NO_ACCESS_UPDATE_REVIEW}, status=status.HTTP_400_BAD_REQUEST)
@@ -137,10 +135,9 @@ class SiteReviewViewSet(viewsets.ModelViewSet):
         get_user = SiteReview.objects.filter(user=request.user.id).first()
         if get_user:
             return Response({'msg': REVIEW_ALREADY_CREATED}, status=status.HTTP_400_BAD_REQUEST)
-        request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        serializer.save(user=request.user)
         headers = self.get_success_headers(serializer.data)
         return Response({'data': serializer.data, 'msg': REVIEW_CREATED}, status=status.HTTP_201_CREATED,
                         headers=headers)
@@ -150,7 +147,7 @@ class SiteReviewViewSet(viewsets.ModelViewSet):
         if instance.user.id == request.user.id:
             serializer = SiteReviewUpdateSerializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+            serializer.save(user=request.user)
 
             return Response({'data': serializer.data, 'msg': REVIEW_UPDATED}, status=status.HTTP_200_OK)
         return Response({'msg': NO_ACCESS_UPDATE_REVIEW}, status=status.HTTP_400_BAD_REQUEST)
@@ -173,20 +170,22 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
         get_user = HouseReview.objects.filter(user=request.user.id, house=find_house.id).first()
         if get_user:
             return Response({'msg': REVIEW_ALREADY_CREATED}, status=status.HTTP_400_BAD_REQUEST)
-        request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        serializer.save(user=request.user)
         headers = self.get_success_headers(serializer.data)
         return Response({'data': serializer.data, 'msg': REVIEW_CREATED}, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.user.id == request.user.id:
-            request.data['house'] = instance.house.id
+            get_house = request.data.get('house')
+            find_house = House.objects.filter(id=get_house).first()
+            if not find_house:
+                return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
             serializer = HouseReviewUpdateSerializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+            serializer.save(user=request.user)
 
             return Response({'data': serializer.data, 'msg': REVIEW_UPDATED}, status=status.HTTP_200_OK)
         return Response({'msg': NO_ACCESS_UPDATE_REVIEW}, status=status.HTTP_400_BAD_REQUEST)
@@ -206,10 +205,9 @@ class HouseImageViewSet(viewsets.ModelViewSet):
         find_house = House.objects.filter(id=get_house)
         if not find_house:
             return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
-        request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        serializer.save(user=request.user)
         headers = self.get_success_headers(serializer.data)
         return Response({'data': serializer.data, 'msg': HOUSE_CREATED}, status=status.HTTP_201_CREATED,
                         headers=headers)
@@ -220,7 +218,7 @@ class HouseImageViewSet(viewsets.ModelViewSet):
             request.data['house'] = instance.house.id
             serializer = HouseImageUpdateSerializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+            serializer.save(user=request.user)
             return Response({'data': serializer.data, 'msg': HOUSE_UPDATED}, status=status.HTTP_200_OK)
         return Response({'msg': NO_ACCESS_UPDATE_HOUSE_IMAGE}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -254,9 +252,11 @@ class LikesViewSet(viewsets.ModelViewSet):
         return Response({'msg': LIKE_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
-
         instance = self.get_object()
-        request.data['house'] = instance.house.id
+        get_house = request.data.get('house')
+        find_house = House.objects.filter(id=get_house)
+        if not find_house:
+            return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
         house_obj = House.objects.get(pk=request.data.get('house'))
         liked_user = Likes.objects.filter(house=instance.house.id).values('user')
         for user in liked_user:
@@ -265,7 +265,7 @@ class LikesViewSet(viewsets.ModelViewSet):
                 all_likes = Likes.objects.get(house=house_obj)
                 serializer = self.get_serializer(all_likes, data=request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
-                self.perform_update(serializer)
+                serializer.save(house=house_obj)
                 return Response({'data': serializer.data, 'msg': UNLIKED}, status=status.HTTP_200_OK)
         return Response({'msg': DISLIKE_ERROR}, status=status.HTTP_204_NO_CONTENT)
 
@@ -311,7 +311,10 @@ class FavouritesViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        request.data['house'] = instance.house.id
+        get_house = request.data.get('house')
+        find_house = House.objects.filter(id=get_house)
+        if not find_house:
+            return Response({'msg': HOUSE_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
         house_obj = House.objects.get(pk=request.data.get('house'))
         favourited_user = Favourites.objects.filter(house=instance.house.id).values('user')
         for user in favourited_user:
@@ -320,7 +323,7 @@ class FavouritesViewSet(viewsets.ModelViewSet):
                 all_favourites = Favourites.objects.get(house=house_obj)
                 serializer = self.get_serializer(all_favourites, data=request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
-                self.perform_update(serializer)
+                serializer.save(house=house_obj)
                 return Response({'data': serializer.data, 'msg': REMOVED_FAVOURITES}, status=status.HTTP_200_OK)
         return Response({'msg': REMOVE_FAVOURITES_ERROR}, status=status.HTTP_204_NO_CONTENT)
 
@@ -344,12 +347,12 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
     """
     View to display available house list to buyer
     """
-    queryset = House.objects.filter(is_available=True).filter(selling_choice="Sell")
     serializer_class = HouseSerializer
     lookup_field = 'id'
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        queryset = House.objects.filter(is_available=True).filter(selling_choice="Sell")
         search = request.GET.get('search')
         price_min = request.GET.get('price_min')
         if price_min:
@@ -372,35 +375,35 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
         if date_after:
             validate_date(date_after)
         if filter_city:
-            queryset = self.queryset.filter(city=filter_city).order_by('-created_date')
+            queryset = queryset.filter(city=filter_city).order_by('-created_date')
         if filter_state:
-            queryset = self.queryset.filter(state=filter_state).order_by('-created_date')
+            queryset = queryset.filter(state=filter_state).order_by('-created_date')
         if filter_amenities:
-            queryset = self.queryset.filter(amenities=filter_amenities).order_by('-created_date')
+            queryset = queryset.filter(amenities=filter_amenities).order_by('-created_date')
         if filter_no_of_bedrooms:
-            queryset = self.queryset.filter(no_of_bedrooms=filter_no_of_bedrooms).order_by('-created_date')
+            queryset = queryset.filter(no_of_bedrooms=filter_no_of_bedrooms).order_by('-created_date')
         if filter_possession:
-            queryset = self.queryset.filter(possession=filter_possession).order_by('-created_date')
+            queryset = queryset.filter(possession=filter_possession).order_by('-created_date')
         if filter_project_status:
-            queryset = self.queryset.filter(project_status=filter_project_status).order_by('-created_date')
+            queryset = queryset.filter(project_status=filter_project_status).order_by('-created_date')
         if search:
-            queryset = self.queryset.filter(Q(city__contains=search) | Q(state__contains=search)).order_by('-created_date')
+            queryset = queryset.filter(Q(city__contains=search) | Q(state__contains=search)).order_by('-created_date')
         if price_min and price_max:
-            queryset = self.queryset.filter(price__gte=price_min, price__lte=price_max)
+            queryset = queryset.filter(price__gte=price_min, price__lte=price_max)
         elif price_max:
-            queryset = self.queryset.filter(price__lte=price_max)
+            queryset = queryset.filter(price__lte=price_max)
         elif price_min:
-            queryset = self.queryset.filter(price__gte=price_min)
+            queryset = queryset.filter(price__gte=price_min)
         if date_after and date_before:
-            queryset = self.queryset.filter(created_date__gte=date_after, created_date__lte=date_before)
+            queryset = queryset.filter(created_date__gte=date_after, created_date__lte=date_before)
         elif date_after:
-            queryset = self.queryset.filter(created_date__gte=date_after)
+            queryset = queryset.filter(created_date__gte=date_after)
         elif date_before:
-            queryset = self.queryset.filter(created_date__lte=date_before)
+            queryset = queryset.filter(created_date__lte=date_before)
         if sort_by_price_asc:
-            queryset = self.queryset.order_by('price', '-created_date')
+            queryset = queryset.order_by('price', '-created_date')
         elif sort_by_price_desc:
-            queryset = self.queryset.order_by('-price', '-created_date')
+            queryset = queryset.order_by('-price', '-created_date')
 
         serializer = self.get_serializer(queryset, many=True)
         return Response({'data': serializer.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
@@ -429,9 +432,9 @@ class HouseForRentListView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = HouseSerializer
     lookup_field = 'id'
     permission_classes = [IsAuthenticated]
-    queryset = House.objects.filter(is_available=True).filter(selling_choice="Rent")
 
     def get(self, request, *args, **kwargs):
+        queryset = House.objects.filter(is_available=True).filter(selling_choice="Rent")
         search = request.GET.get('search')
         price_min = request.GET.get('price_min')
         if price_min:
@@ -455,35 +458,35 @@ class HouseForRentListView(generics.GenericAPIView, mixins.ListModelMixin):
             validate_date(date_after)
 
         if filter_city:
-            queryset = self.queryset.filter(city=filter_city).order_by('-created_date')
+            queryset = queryset.filter(city=filter_city).order_by('-created_date')
         if filter_state:
-            queryset = self.queryset.filter(state=filter_state).order_by('-created_date')
+            queryset = queryset.filter(state=filter_state).order_by('-created_date')
         if filter_amenities:
-            queryset = self.queryset.filter(amenities=filter_amenities).order_by('-created_date')
+            queryset = queryset.filter(amenities=filter_amenities).order_by('-created_date')
         if filter_no_of_bedrooms:
-            queryset = self.queryset.filter(no_of_bedrooms=filter_no_of_bedrooms).order_by('-created_date')
+            queryset = queryset.filter(no_of_bedrooms=filter_no_of_bedrooms).order_by('-created_date')
         if filter_possession:
-            queryset = self.queryset.filter(possession=filter_possession).order_by('-created_date')
+            queryset = queryset.filter(possession=filter_possession).order_by('-created_date')
         if filter_project_status:
-            queryset = self.queryset.filter(project_status=filter_project_status).order_by('-created_date')
+            queryset = queryset.filter(project_status=filter_project_status).order_by('-created_date')
         if search:
-            queryset = self.queryset.filter(Q(city__contains=search) | Q(state__contains=search)).order_by('-created_date')
+            queryset = queryset.filter(Q(city__contains=search) | Q(state__contains=search)).order_by('-created_date')
         if price_min and price_max:
-            queryset = self.queryset.filter(price__gte=price_min, price__lte=price_max)
+            queryset = queryset.filter(price__gte=price_min, price__lte=price_max)
         elif price_max:
-            queryset = self.queryset.filter(price__lte=price_max)
+            queryset = queryset.filter(price__lte=price_max)
         elif price_min:
-            queryset = self.queryset.filter(price__gte=price_min)
+            queryset = queryset.filter(price__gte=price_min)
         if date_after and date_before:
-            queryset = self.queryset.filter(created_date__gte=date_after, created_date__lte=date_before)
+            queryset = queryset.filter(created_date__gte=date_after, created_date__lte=date_before)
         elif date_after:
-            queryset = self.queryset.filter(created_date__gte=date_after)
+            queryset = queryset.filter(created_date__gte=date_after)
         elif date_before:
-            queryset = self.queryset.filter(created_date__lte=date_before)
+            queryset = queryset.filter(created_date__lte=date_before)
         if sort_by_price_asc:
-            queryset = self.queryset.order_by('price', '-created_date')
+            queryset = queryset.order_by('price', '-created_date')
         elif sort_by_price_desc:
-            queryset = self.queryset.order_by('-price', '-created_date')
+            queryset = queryset.order_by('-price', '-created_date')
 
         serializer = self.get_serializer(queryset, many=True)
         return Response({'data': serializer.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)

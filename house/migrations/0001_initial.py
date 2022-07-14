@@ -68,16 +68,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='HouseImages',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('house_image', models.ImageField(blank=True, null=True, upload_to='house_images/')),
-                ('created_date', models.DateField(auto_now_add=True, null=True)),
-                ('house', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='house_image_set', to='house.house')),
-                ('user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
-        migrations.CreateModel(
             name='FavouritesUser',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),

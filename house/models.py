@@ -61,7 +61,7 @@ class HouseImages(models.Model):
     """
     house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='house_image_set')
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
-    house_image = models.ImageField(upload_to='house_images/', null=True, blank=True)
+    house_image = models.ImageField(upload_to='house_images/')
     created_date = models.DateField(auto_now_add=True, null=True)
 
     def __str__(self):
