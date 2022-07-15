@@ -1,4 +1,3 @@
-from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
@@ -52,6 +51,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for User Profile View
     """
+
     class Meta:
         model = User
         fields = ['email', 'first_name', 'last_name', 'profile_image']
@@ -83,7 +83,7 @@ class ResendEmailUpdateLinkSerializer(serializers.ModelSerializer):
             }
             EmailSend.send_email(data)
             return attrs
-        except:
+        except user.DoesNotExist:
             raise ValidationError(NOT_REGISTERED)
 
 
@@ -91,6 +91,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer for User Profile View
     """
+
     class Meta:
         model = User
         fields = ['email', 'first_name', 'last_name', 'profile_image']
@@ -206,6 +207,6 @@ class UserPasswordResetSerializer(serializers.Serializer):
             user.set_password(password)
             user.save()
             return attrs
-        except DjangoUnicodeDecodeError as identifier:
+        except DjangoUnicodeDecodeError:
             PasswordResetTokenGenerator().check_token(user, token)
             raise ValidationError(INVALID_TOKEN)

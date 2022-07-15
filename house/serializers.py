@@ -1,7 +1,4 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
-
-from accounts.models import User
 from house.models import House, Amenities, HouseReview, SiteReview, HouseImages, Likes, Favourites, FavouritesUser, \
     Preference
 
@@ -150,6 +147,9 @@ class HouseUpdateSerializer(serializers.ModelSerializer):
 
 
 class FavouritesSerializer(serializers.ModelSerializer):
+    """
+    Serializer for house favourites
+    """
 
     class Meta:
         model = Favourites
@@ -157,6 +157,9 @@ class FavouritesSerializer(serializers.ModelSerializer):
 
 
 class MyFavouritesSerializer(serializers.ModelSerializer):
+    """
+    Serializer to display favourited houses by specific user
+    """
     house_set = HouseSerializer(many=True, read_only=True)
     house = serializers.SerializerMethodField()
     residence_name = serializers.SerializerMethodField()
@@ -177,7 +180,9 @@ class MyFavouritesSerializer(serializers.ModelSerializer):
 
 
 class PreferencesSerializer(serializers.ModelSerializer):
-
+    """
+    Serializer to Add, update, delete and view house preference
+    """
     class Meta:
         model = Preference
         fields = ['user', 'residence_name', 'no_of_bedrooms', 'state', 'city', 'selling_choice']

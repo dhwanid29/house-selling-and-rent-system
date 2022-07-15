@@ -5,15 +5,17 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.crypto import get_random_string
 from django.views import View
 from jwt import InvalidSignatureError, DecodeError, ExpiredSignatureError
-
 from accounts.models import User
 from chat.models import Message, Room
+from constants import CANNOT_CHAT_WITH_YOURSELF
 from house.models import House
 from house_selling import settings
 
 
 class UserValidationView(View):
-
+    """
+    View to authenticate user via token
+    """
     def get(self, request):
         return render(request, template_name='chat/user_validation.html')
 
@@ -29,7 +31,9 @@ class UserValidationView(View):
 
 
 class CreateRoom(View):
-
+    """
+    View to get the receiver and create room for sender and receiver
+    """
     def get(self, request):
         sender = request.session.get("user_id")
         queryset = House.objects.all().distinct('user')
@@ -48,7 +52,7 @@ class CreateRoom(View):
         receiver = request.session.get("receiver_id")
         receiver_user = User.objects.get(id=receiver)
         if int(sender) == int(receiver):
-            return HttpResponse('You cannot chat with yourself.')
+            return HttpResponse(CANNOT_CHAT_WITH_YOURSELF)
         room_name = get_random_string(length=10)
 
         get_all_rooms = Room.objects.filter(Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender))
@@ -61,6 +65,9 @@ class CreateRoom(View):
 
 
 class ChatRoom(View):
+    """
+    View for chatting between sender and receiver and display old chats between the sender and receiver
+    """
     template_name = 'chat/room.html'
 
     def get(self, request, room_name, *args, **kwargs):

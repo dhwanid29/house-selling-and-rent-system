@@ -1,8 +1,7 @@
 import datetime
-import re
 from rest_framework.exceptions import ValidationError
 
-from constants import PASSWORD_VALIDATION_ERROR, USERNAME_SHORT_ERROR, USERNAME_LONG_ERROR, ONLY_LOWERCASE, \
+from constants import USERNAME_SHORT_ERROR, USERNAME_LONG_ERROR, ONLY_LOWERCASE, \
     NO_SPACES_ALLOWED, INVALID_NAME, NAME_NO_SPACES_ALLOWED, PASSWORD_SHORT_LENGTH_ERROR, PASSWORD_LONG_LENGTH_ERROR, \
     PASSWORD_CONTAINS_NO_DIGIT_ERROR, PASSWORD_CONTAINS_NO_UPPERCASE_ERROR, PASSWORD_CONTAINS_NO_LOWERCASE_ERROR, \
     PASSWORD_CONTAINS_NO_SPECIAL_CHARACTER_ERROR, DATE_ERROR, PRICE_ERROR
@@ -46,7 +45,7 @@ def validate_date(date_string):
     date_format = '%Y-%m-%d'
     try:
         datetime.datetime.strptime(date_string, date_format)
-    except Exception as e:
+    except ValueError:
         raise ValidationError(DATE_ERROR)
 
 
@@ -54,7 +53,6 @@ def validate_price(price):
     if not price.isdecimal():
         raise ValidationError(PRICE_ERROR)
     return price
-
 
 
 def validate_username(username):

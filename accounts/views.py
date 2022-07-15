@@ -7,8 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
-
 from constants import USER_CREATED, LOGGED_IN, INVALID_EMAIL_OR_PASSWORD, PASSWORD_CHANGED, PASSWORD_RESET_LINK, \
     PASSWORD_RESET_SUCCESSFUL, HOST_URL, EMAIL_BODY_EMAIL_UPDATE, EMAIL_SUBJECT_EMAIL_UPDATE, EMAIL_UPDATE_LINK
 from .models import User
@@ -18,8 +16,6 @@ from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserCh
     UserPasswordResetSerializer, UserProfileSerializer, UserProfileUpdateSerializer, UserEmailUpdateSerializer, \
     ResendEmailUpdateLinkSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
-
-
 # Generate token manually
 from .utils import EmailSend
 
@@ -47,7 +43,8 @@ class UserRegistrationView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             token = get_tokens_for_user(user)
-            return Response({'token': token, 'data': serializer.data, 'msg': USER_CREATED}, status=status.HTTP_201_CREATED)
+            return Response({'token': token, 'data': serializer.data, 'msg': USER_CREATED},
+                            status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -66,7 +63,8 @@ class UserLoginView(APIView):
                 token = get_tokens_for_user(user)
                 return Response({'token': token, 'msg': LOGGED_IN}, status=status.HTTP_200_OK)
             else:
-                return Response({'errors': {'non_field_errors': [INVALID_EMAIL_OR_PASSWORD]}}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'errors': {'non_field_errors': [INVALID_EMAIL_OR_PASSWORD]}},
+                                status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
@@ -148,6 +146,7 @@ class SendPasswordResetEmailView(APIView):
     """
     View to get email from user and send reset password link to that mail
     """
+
     def post(self, request):
         serializer = SendPasswordResetEmailSerializers(data=request.data)
         if serializer.is_valid():
@@ -161,7 +160,7 @@ class UserPasswordResetView(APIView):
     """
 
     def post(self, request, uid, token):
-        serializer = UserPasswordResetSerializer(data=request.data, context={'uid':uid, 'token':token})
+        serializer = UserPasswordResetSerializer(data=request.data, context={'uid': uid, 'token': token})
         if serializer.is_valid():
             return Response({'msg': PASSWORD_RESET_SUCCESSFUL}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -173,7 +172,7 @@ class UserEmailUpdateLoginView(APIView):
     """
 
     def post(self, request, uid, token):
-        serializer = UserEmailUpdateSerializer(data=request.data, context={'uid':uid, 'token':token})
+        serializer = UserEmailUpdateSerializer(data=request.data, context={'uid': uid, 'token': token})
         if serializer.is_valid():
             email = serializer.data.get('email')
             password = serializer.data.get('password')
@@ -182,6 +181,7 @@ class UserEmailUpdateLoginView(APIView):
                 token = get_tokens_for_user(user)
                 return Response({'token': token, 'msg': LOGGED_IN}, status=status.HTTP_200_OK)
             else:
-                return Response({'errors': {'non_field_errors': [INVALID_EMAIL_OR_PASSWORD]}}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'errors': {'non_field_errors': [INVALID_EMAIL_OR_PASSWORD]}},
+                                status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)

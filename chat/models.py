@@ -5,6 +5,9 @@ from accounts.models import User
 
 
 class Room(models.Model):
+    """
+    Model to create room
+    """
     sender = models.ForeignKey(User, on_delete=SET(AnonymousUser.id), related_name='sender_room')
     receiver = models.ForeignKey(User, on_delete=SET(AnonymousUser.id), related_name='receiver_room')
     room_name = models.CharField(max_length=255, unique=True)
@@ -14,6 +17,9 @@ class Room(models.Model):
 
 
 class Message(models.Model):
+    """
+    Model to save messages
+    """
     sender = models.ForeignKey(User, on_delete=SET(AnonymousUser.id), related_name='sender')
     receiver = models.ForeignKey(User, on_delete=SET(AnonymousUser.id), related_name='receiver')
     message = models.TextField()

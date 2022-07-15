@@ -135,6 +135,9 @@ class FavouritesUser(models.Model):
 
 
 class Preference(models.Model):
+    """
+    Model to Add House Preference
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     residence_name = models.CharField(max_length=255)
     no_of_bedrooms = models.IntegerField()

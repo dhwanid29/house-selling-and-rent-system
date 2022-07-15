@@ -12,6 +12,10 @@ from house.models import House, Amenities, HouseReview, SiteReview, Likes, Favou
 
 @pytest.fixture
 def create_user():
+    """
+    Fixture to create user in the dummy database
+    :return: created user
+    """
     client = APIClient()
     user, created = User.objects.get_or_create(first_name="dhwani", last_name="dadhich", username="dhwani",
                                                email="dhwani@gmail.com",
@@ -24,6 +28,10 @@ def create_user():
 
 @pytest.fixture
 def registered_user():
+    """
+    Fixture to register user in the dummy database
+    :return: client
+    """
     client = APIClient()
     payload = {
         "first_name": "dhwani",
@@ -41,6 +49,11 @@ def registered_user():
 
 @pytest.fixture
 def authenticated_client(create_user):
+    """
+    Fixture to authenticate created user
+    :param create_user: created user
+    :return: authenticated client
+    """
     client = APIClient()
     res = client.post(reverse('login'), {"email": create_user.email, "password": "Abcd@1234"})
     get_user = User.objects.filter(email=create_user.email).first()
@@ -53,6 +66,11 @@ def authenticated_client(create_user):
 
 @pytest.fixture
 def create_house_amenities(authenticated_client):
+    """
+    Fixture to create house amenities
+    :param authenticated_client: authenticated user
+    :return: created house amenities
+    """
     amenities_add, created = Amenities.objects.get_or_create(name="Garden")
     amenities_add.save()
     get_amenities = Amenities.objects.filter(name="Garden").first()
@@ -62,6 +80,11 @@ def create_house_amenities(authenticated_client):
 
 @pytest.fixture
 def create_house(authenticated_client):
+    """
+    Fixture to create house in the dummy database
+    :param authenticated_client: authenticated user
+    :return: created house
+    """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     amenities_add, created = Amenities.objects.get_or_create(name="Garden")
@@ -93,6 +116,11 @@ def create_house(authenticated_client):
 
 @pytest.fixture
 def create_house_rent(authenticated_client):
+    """
+    Fixture to create house for rent
+    :param authenticated_client: authenticated user
+    :return: created house for rent
+    """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     amenities_add, created = Amenities.objects.get_or_create(name="Garden")
@@ -124,6 +152,12 @@ def create_house_rent(authenticated_client):
 
 @pytest.fixture
 def create_house_review(authenticated_client, create_house):
+    """
+    Fixture to create house review for dummy database
+    :param authenticated_client: authenticated user
+    :param create_house: created house
+    :return: created house review
+    """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     get_house =  pytest.house_id
@@ -141,6 +175,11 @@ def create_house_review(authenticated_client, create_house):
 
 @pytest.fixture
 def create_site_review(authenticated_client):
+    """
+    Fixture to create site review in the dummy database
+    :param authenticated_client: authenticated user
+    :return: created site review
+    """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     site_review, created = SiteReview.objects.get_or_create(
@@ -155,6 +194,12 @@ def create_site_review(authenticated_client):
 
 @pytest.fixture
 def create_house_like(authenticated_client, create_house):
+    """
+    Fixture to add house like
+    :param authenticated_client: authenticated user
+    :param create_house: created house
+    :return: added house like
+    """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     get_house = pytest.house_id
@@ -167,6 +212,12 @@ def create_house_like(authenticated_client, create_house):
 
 @pytest.fixture
 def create_house_favourites(authenticated_client, create_house):
+    """
+    Fixture of add house to favourites
+    :param authenticated_client: authenticated user
+    :param create_house: created house
+    :return: favourited house
+    """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     get_house = pytest.house_id
@@ -179,6 +230,11 @@ def create_house_favourites(authenticated_client, create_house):
 
 @pytest.fixture
 def create_preference(authenticated_client):
+    """
+    Fixture to create house preference
+    :param authenticated_client: authenticated user
+    :return: created house preference
+    """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     preference, created = Preference.objects.get_or_create(
@@ -197,6 +253,12 @@ def create_preference(authenticated_client):
 
 @pytest.fixture
 def create_house_images(authenticated_client, create_house):
+    """
+    Fixture to add house images
+    :param authenticated_client: authenticated user
+    :param create_house: created house
+    :return: added house image
+    """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     get_house =  pytest.house_id
@@ -216,6 +278,11 @@ def create_house_images(authenticated_client, create_house):
 
 @pytest.fixture
 def user_token(create_user):
+    """
+    Fixture to created encoded user id and token for resend email link
+    :param create_user: created user
+    :return: None
+    """
     user_email = User.objects.filter(email=create_user.email).first()
     if user_email:
         pytest.uid = urlsafe_base64_encode(force_bytes(str(user_email.id)))
