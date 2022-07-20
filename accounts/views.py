@@ -2,12 +2,10 @@ from django.contrib.auth import authenticate, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.http import HttpResponse
 from django.utils.http import urlsafe_base64_encode
-from drf_yasg import openapi
 from jwt.utils import force_bytes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, mixins, generics
-from rest_framework.views import APIView
 from constants import USER_CREATED, LOGGED_IN, INVALID_EMAIL_OR_PASSWORD, PASSWORD_CHANGED, PASSWORD_RESET_LINK, \
     PASSWORD_RESET_SUCCESSFUL, HOST_URL, EMAIL_BODY_EMAIL_UPDATE, EMAIL_SUBJECT_EMAIL_UPDATE, EMAIL_UPDATE_LINK
 from .models import User
@@ -19,7 +17,6 @@ from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserCh
 from rest_framework_simplejwt.tokens import RefreshToken
 # Generate token manually
 from .utils import EmailSend
-from drf_yasg.utils import swagger_auto_schema
 
 
 def get_tokens_for_user(user):
