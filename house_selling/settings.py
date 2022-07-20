@@ -26,10 +26,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$m#k72#2#jbiujhv7qs)_gf)92@v(91^lgg40mz2h)v-k=t6(p'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['house-selling-and-rent-system.herokuapp.com', '127.0.0.1']
 
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}
 
 # Application definition
 
@@ -49,7 +59,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'accounts',
     'house',
-    'chat'
+    'chat',
+    'drf_yasg',
 ]
 
 SIMPLE_JWT = {
@@ -200,7 +211,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASS')
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=14000),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=140000),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,

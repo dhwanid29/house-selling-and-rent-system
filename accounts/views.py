@@ -2,10 +2,11 @@ from django.contrib.auth import authenticate, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.http import HttpResponse
 from django.utils.http import urlsafe_base64_encode
+from drf_yasg import openapi
 from jwt.utils import force_bytes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, mixins, generics
 from rest_framework.views import APIView
 from constants import USER_CREATED, LOGGED_IN, INVALID_EMAIL_OR_PASSWORD, PASSWORD_CHANGED, PASSWORD_RESET_LINK, \
     PASSWORD_RESET_SUCCESSFUL, HOST_URL, EMAIL_BODY_EMAIL_UPDATE, EMAIL_SUBJECT_EMAIL_UPDATE, EMAIL_UPDATE_LINK
@@ -18,6 +19,7 @@ from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserCh
 from rest_framework_simplejwt.tokens import RefreshToken
 # Generate token manually
 from .utils import EmailSend
+from drf_yasg.utils import swagger_auto_schema
 
 
 def get_tokens_for_user(user):
@@ -33,10 +35,12 @@ def get_tokens_for_user(user):
     }
 
 
-class UserRegistrationView(APIView):
+class UserRegistrationView(generics.GenericAPIView, mixins.CreateModelMixin):
     """
     View for User Registration
     """
+
+    serializer_class = UserRegistrationSerializer
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
@@ -48,10 +52,12 @@ class UserRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserLoginView(APIView):
+class UserLoginView(generics.GenericAPIView, mixins.CreateModelMixin):
     """
     View for User Login View
     """
+
+    serializer_class = UserLoginSerializer
 
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
@@ -69,12 +75,13 @@ class UserLoginView(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 
-class UserProfileView(APIView):
+class UserProfileView(generics.GenericAPIView, mixins.RetrieveModelMixin):
     """
     User Profile View
     """
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
 
     def get_object(self, request):
         try:
@@ -117,10 +124,11 @@ class UserProfileView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ResendLinkEmailUpdate(APIView):
+class ResendLinkEmailUpdate(generics.GenericAPIView, mixins.CreateModelMixin):
     """
     Resend Email Update Link
     """
+    serializer_class = ResendEmailUpdateLinkSerializer
 
     def post(self, request):
         serializer = ResendEmailUpdateLinkSerializer(data=request.data, context={'user': request.user})
@@ -129,11 +137,12 @@ class ResendLinkEmailUpdate(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserChangePasswordView(APIView):
+class UserChangePasswordView(generics.GenericAPIView, mixins.CreateModelMixin):
     """
     User Change Password View
     """
     permission_classes = [IsAuthenticated]
+    serializer_class = UserChangePasswordSerializer
 
     def post(self, request):
         serializer = UserChangePasswordSerializer(data=request.data, context={'user': request.user})
@@ -142,10 +151,12 @@ class UserChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SendPasswordResetEmailView(APIView):
+class SendPasswordResetEmailView(generics.GenericAPIView, mixins.CreateModelMixin):
     """
     View to get email from user and send reset password link to that mail
     """
+
+    serializer_class = SendPasswordResetEmailSerializers
 
     def post(self, request):
         serializer = SendPasswordResetEmailSerializers(data=request.data)
@@ -154,10 +165,11 @@ class SendPasswordResetEmailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserPasswordResetView(APIView):
+class UserPasswordResetView(generics.GenericAPIView, mixins.CreateModelMixin):
     """
     View to reset user password
     """
+    serializer_class = UserPasswordResetSerializer
 
     def post(self, request, uid, token):
         serializer = UserPasswordResetSerializer(data=request.data, context={'uid': uid, 'token': token})
@@ -166,10 +178,11 @@ class UserPasswordResetView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserEmailUpdateLoginView(APIView):
+class UserEmailUpdateLoginView(generics.GenericAPIView, mixins.CreateModelMixin):
     """
     View to reset user password
     """
+    serializer_class = UserEmailUpdateSerializer
 
     def post(self, request, uid, token):
         serializer = UserEmailUpdateSerializer(data=request.data, context={'uid': uid, 'token': token})

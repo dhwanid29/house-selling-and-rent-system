@@ -1,4 +1,7 @@
 from django.db.models import Q, Count
+from django.utils.decorators import method_decorator
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -17,6 +20,33 @@ from house.serializers import HouseSerializer, AmenitiesSerializer, HouseReviewS
     SiteReviewSerializer, SiteReviewUpdateSerializer, HouseImageSerializer, LikesSerializer, FavouritesSerializer, \
     MyFavouritesSerializer, HouseUpdateSerializer, HouseImageUpdateSerializer, PreferencesSerializer
 
+header_token = openapi.Parameter('authorization', openapi.IN_HEADER, description="local header param",
+                                 type=openapi.IN_HEADER)
+city_param = openapi.Parameter('filter_city', in_=openapi.IN_QUERY, description='Description', type=openapi.TYPE_STRING)
+state_param = openapi.Parameter('filter_state', in_=openapi.IN_QUERY, description='Description',
+                                type=openapi.TYPE_STRING)
+amenities_param = openapi.Parameter('filter_amenities', in_=openapi.IN_QUERY, description='Description',
+                                    type=openapi.TYPE_STRING)
+no_of_bedrooms_param = openapi.Parameter('filter_no_of_bedrooms', in_=openapi.IN_QUERY, description='Description',
+                                         type=openapi.TYPE_STRING)
+possession_param = openapi.Parameter('filter_possession', in_=openapi.IN_QUERY, description='Description',
+                                     type=openapi.TYPE_STRING)
+project_status_param = openapi.Parameter('filter_project_status', in_=openapi.IN_QUERY, description='Description',
+                                         type=openapi.TYPE_STRING)
+date_before_param = openapi.Parameter('date_before', in_=openapi.IN_QUERY, description='Description',
+                                      type=openapi.TYPE_STRING)
+date_after_param = openapi.Parameter('date_after', in_=openapi.IN_QUERY, description='Description',
+                                     type=openapi.TYPE_STRING)
+search_param = openapi.Parameter('search', in_=openapi.IN_QUERY, description='Description', type=openapi.TYPE_STRING)
+price_min_param = openapi.Parameter('price_min', in_=openapi.IN_QUERY, description='Description',
+                                    type=openapi.TYPE_STRING)
+price_max_param = openapi.Parameter('price_max', in_=openapi.IN_QUERY, description='Description',
+                                    type=openapi.TYPE_STRING)
+sort_by_price_asc_param = openapi.Parameter('sort_by_price_asc', in_=openapi.IN_QUERY, description='Description',
+                                            type=openapi.TYPE_STRING)
+sort_by_price_desc_param = openapi.Parameter('sort_by_price_desc', in_=openapi.IN_QUERY, description='Description',
+                                             type=openapi.TYPE_STRING)
+
 
 class AmenitiesCreate(generics.GenericAPIView, mixins.CreateModelMixin):
     """
@@ -26,6 +56,7 @@ class AmenitiesCreate(generics.GenericAPIView, mixins.CreateModelMixin):
     queryset = Amenities.objects.all()
     permission_classes = [IsAdminUser]
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -35,7 +66,7 @@ class AmenitiesCreate(generics.GenericAPIView, mixins.CreateModelMixin):
                         headers=headers)
 
 
-class AmenitiesUpdateDelete(generics.GenericAPIView, mixins.UpdateModelMixin, mixins.ListModelMixin,
+class AmenitiesUpdateDelete(generics.GenericAPIView, mixins.UpdateModelMixin,
                             mixins.DestroyModelMixin):
     """
     View to update, delete Amenities
@@ -45,6 +76,7 @@ class AmenitiesUpdateDelete(generics.GenericAPIView, mixins.UpdateModelMixin, mi
     permission_classes = [IsAdminUser]
     lookup_field = 'id'
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = AmenitiesSerializer(instance, data=request.data, partial=True)
@@ -52,6 +84,7 @@ class AmenitiesUpdateDelete(generics.GenericAPIView, mixins.UpdateModelMixin, mi
         self.perform_update(serializer)
         return Response({'data': serializer.data, 'msg': AMENITIES_UPDATED}, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
@@ -64,7 +97,6 @@ class AmenitiesViewList(generics.GenericAPIView, mixins.ListModelMixin):
     """
     serializer_class = AmenitiesSerializer
     queryset = Amenities.objects.all()
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -78,6 +110,9 @@ class AmenitiesViewList(generics.GenericAPIView, mixins.ListModelMixin):
         return Response({'data': serializer.data, 'msg': AMENITIES_VIEW}, status=status.HTTP_200_OK)
 
 
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='destroy', decorator=swagger_auto_schema(manual_parameters=[header_token]))
 class HouseViewSet(viewsets.ModelViewSet):
     """
     View to get, update, delete House Details
@@ -86,7 +121,9 @@ class HouseViewSet(viewsets.ModelViewSet):
     queryset = House.objects.all()
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
+    http_method_names = ['get', 'post', 'put', 'delete']
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def create(self, request, *args, **kwargs):
         get_sellers = House.objects.filter(user=request.user.id)
         if get_sellers:
@@ -114,6 +151,7 @@ class HouseViewSet(viewsets.ModelViewSet):
         return Response({'data': serializer.data, 'msg': HOUSE_CREATED}, status=status.HTTP_201_CREATED,
                         headers=headers)
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.user.id == request.user.id:
@@ -125,6 +163,9 @@ class HouseViewSet(viewsets.ModelViewSet):
         return Response({'msg': NO_ACCESS_UPDATE_REVIEW}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='destroy', decorator=swagger_auto_schema(manual_parameters=[header_token]))
 class SiteReviewViewSet(viewsets.ModelViewSet):
     """
     View to add, get, update, delete Site Review by id
@@ -132,7 +173,9 @@ class SiteReviewViewSet(viewsets.ModelViewSet):
     serializer_class = SiteReviewSerializer
     queryset = SiteReview.objects.all()
     lookup_field = 'user'
+    http_method_names = ['get', 'post', 'put', 'delete']
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def create(self, request, *args, **kwargs):
         get_user = SiteReview.objects.filter(user=request.user.id).first()
         if get_user:
@@ -144,6 +187,7 @@ class SiteReviewViewSet(viewsets.ModelViewSet):
         return Response({'data': serializer.data, 'msg': REVIEW_CREATED}, status=status.HTTP_201_CREATED,
                         headers=headers)
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.user.id == request.user.id:
@@ -155,6 +199,9 @@ class SiteReviewViewSet(viewsets.ModelViewSet):
         return Response({'msg': NO_ACCESS_UPDATE_REVIEW}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='destroy', decorator=swagger_auto_schema(manual_parameters=[header_token]))
 class HouseReviewViewSet(viewsets.ModelViewSet):
     """
     View to get, update, delete House Review
@@ -163,7 +210,9 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
     queryset = HouseReview.objects.all()
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
+    http_method_names = ['get', 'post', 'put', 'delete']
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def create(self, request, *args, **kwargs):
         get_house = request.data.get('house')
         find_house = House.objects.filter(id=get_house).first()
@@ -179,6 +228,7 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
         return Response({'data': serializer.data, 'msg': REVIEW_CREATED}, status=status.HTTP_201_CREATED,
                         headers=headers)
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.user.id == request.user.id:
@@ -194,6 +244,9 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
         return Response({'msg': NO_ACCESS_UPDATE_REVIEW}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='destroy', decorator=swagger_auto_schema(manual_parameters=[header_token]))
 class HouseImageViewSet(viewsets.ModelViewSet):
     """
     View to get, update, delete House Image
@@ -202,7 +255,9 @@ class HouseImageViewSet(viewsets.ModelViewSet):
     queryset = HouseImages.objects.all()
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
+    http_method_names = ['get', 'post', 'put', 'delete']
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def create(self, request, *args, **kwargs):
         get_house = request.data.get('house')
         find_house = House.objects.filter(id=get_house)
@@ -215,6 +270,7 @@ class HouseImageViewSet(viewsets.ModelViewSet):
         return Response({'data': serializer.data, 'msg': HOUSE_CREATED}, status=status.HTTP_201_CREATED,
                         headers=headers)
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.user.id == request.user.id:
@@ -226,6 +282,8 @@ class HouseImageViewSet(viewsets.ModelViewSet):
         return Response({'msg': NO_ACCESS_UPDATE_HOUSE_IMAGE}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=[header_token]))
 class LikesViewSet(viewsets.ModelViewSet):
     """
     View to Like and Dislike House
@@ -234,7 +292,9 @@ class LikesViewSet(viewsets.ModelViewSet):
     serializer_class = LikesSerializer
     lookup_field = 'house'
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'put']
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def create(self, request, *args, **kwargs):
         get_house = request.data.get('house')
         find_house = House.objects.filter(id=get_house)
@@ -254,6 +314,7 @@ class LikesViewSet(viewsets.ModelViewSet):
             return Response({'data': serializer.data, 'msg': LIKED}, status=status.HTTP_201_CREATED)
         return Response({'msg': LIKE_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         get_house = request.data.get('house')
@@ -273,6 +334,8 @@ class LikesViewSet(viewsets.ModelViewSet):
         return Response({'msg': DISLIKE_ERROR}, status=status.HTTP_204_NO_CONTENT)
 
 
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=[header_token]))
 class FavouritesViewSet(viewsets.ModelViewSet):
     """
     View to Shortlist House and remove House from Shortlisted list
@@ -281,7 +344,9 @@ class FavouritesViewSet(viewsets.ModelViewSet):
     serializer_class = FavouritesSerializer
     lookup_field = 'house'
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'put']
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def create(self, request, attrs=None, *args, **kwargs):
         get_house = request.data.get('house')
         find_house = House.objects.filter(id=get_house)
@@ -312,6 +377,7 @@ class FavouritesViewSet(viewsets.ModelViewSet):
             return Response({'data': serializer.data, 'msg': ADDED_TO_FAVOURITES}, status=status.HTTP_201_CREATED)
         return Response({'msg': FAVOURITE_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         get_house = request.data.get('house')
@@ -340,6 +406,7 @@ class BuyerHouseRetrieveView(generics.GenericAPIView, mixins.RetrieveModelMixin)
     lookup_field = 'id'
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
@@ -354,6 +421,12 @@ class BuyerHouseListView(generics.GenericAPIView, mixins.ListModelMixin):
     lookup_field = 'id'
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(manual_parameters=[header_token, city_param, state_param, amenities_param,
+                                            no_of_bedrooms_param, possession_param, project_status_param,
+                                            date_before_param,
+                                            date_after_param, search_param, price_min_param, price_max_param,
+                                            sort_by_price_asc_param,
+                                            sort_by_price_desc_param])
     def get(self, request, *args, **kwargs):
         queryset = House.objects.filter(is_available=True).filter(selling_choice="Sell")
         search = request.GET.get('search')
@@ -421,6 +494,7 @@ class HouseForRentRetrieveView(generics.GenericAPIView, mixins.RetrieveModelMixi
     lookup_field = 'id'
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
@@ -436,6 +510,12 @@ class HouseForRentListView(generics.GenericAPIView, mixins.ListModelMixin):
     lookup_field = 'id'
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(manual_parameters=[header_token, city_param, state_param, amenities_param,
+                                            no_of_bedrooms_param, possession_param, project_status_param,
+                                            date_before_param,
+                                            date_after_param, search_param, price_min_param, price_max_param,
+                                            sort_by_price_asc_param,
+                                            sort_by_price_desc_param])
     def get(self, request, *args, **kwargs):
         queryset = House.objects.filter(is_available=True).filter(selling_choice="Rent")
         search = request.GET.get('search')
@@ -503,12 +583,16 @@ class FavouritesByUser(generics.GenericAPIView, mixins.RetrieveModelMixin):
     lookup_field = 'user'
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def get(self, request, *args, **kwargs):
         favs = FavouritesUser.objects.filter(user=request.user.id)
         favourites_data = MyFavouritesSerializer(favs, many=True)
         return Response({'data': favourites_data.data, 'msg': DATA_RETRIEVED}, status=status.HTTP_200_OK)
 
 
+@method_decorator(name='retrieve', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='list', decorator=swagger_auto_schema(manual_parameters=[header_token]))
+@method_decorator(name='destroy', decorator=swagger_auto_schema(manual_parameters=[header_token]))
 class PreferencesViewSet(viewsets.ModelViewSet):
     """
     View to insert, update, view and delete preferences
@@ -517,7 +601,9 @@ class PreferencesViewSet(viewsets.ModelViewSet):
     queryset = Preference.objects.all()
     permission_classes = [IsAuthenticated]
     lookup_field = 'user'
+    http_method_names = ['get', 'post', 'put', 'delete']
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def create(self, request, *args, **kwargs):
         get_user = Preference.objects.filter(user=request.user.id).first()
         if get_user:
@@ -530,6 +616,7 @@ class PreferencesViewSet(viewsets.ModelViewSet):
         return Response({'data': serializer.data, 'msg': PREFERENCE_CREATED}, status=status.HTTP_201_CREATED,
                         headers=headers)
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.user.id == request.user.id:
@@ -548,6 +635,7 @@ class RecommendedHousesListView(generics.GenericAPIView, mixins.ListModelMixin):
     lookup_field = 'user'
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def get(self, request, *args, **kwargs):
         get_user_preference = Preference.objects.filter(user=request.user.id).first()
         recommendations = House.objects.filter(residence_name=get_user_preference.residence_name,
@@ -566,6 +654,7 @@ class TrendingHousesView(generics.GenericAPIView, mixins.ListModelMixin):
     serializer_class = LikesSerializer
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(manual_parameters=[header_token])
     def get(self, request, *args, **kwargs):
         trending_houses_dict = {}
         rec = Likes.objects.all()
