@@ -35,7 +35,8 @@ class AmenitiesCreate(generics.GenericAPIView, mixins.CreateModelMixin):
                         headers=headers)
 
 
-class AmenitiesUpdateDelete(generics.GenericAPIView, mixins.UpdateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin):
+class AmenitiesUpdateDelete(generics.GenericAPIView, mixins.UpdateModelMixin, mixins.ListModelMixin,
+                            mixins.DestroyModelMixin):
     """
     View to update, delete Amenities
     """
@@ -110,7 +111,8 @@ class HouseViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
         headers = self.get_success_headers(serializer.data)
-        return Response({'data': serializer.data, 'msg': HOUSE_CREATED}, status=status.HTTP_201_CREATED, headers=headers)
+        return Response({'data': serializer.data, 'msg': HOUSE_CREATED}, status=status.HTTP_201_CREATED,
+                        headers=headers)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -174,7 +176,8 @@ class HouseReviewViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
         headers = self.get_success_headers(serializer.data)
-        return Response({'data': serializer.data, 'msg': REVIEW_CREATED}, status=status.HTTP_201_CREATED, headers=headers)
+        return Response({'data': serializer.data, 'msg': REVIEW_CREATED}, status=status.HTTP_201_CREATED,
+                        headers=headers)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -301,7 +304,7 @@ class FavouritesViewSet(viewsets.ModelViewSet):
                                 request.user.last_name + "\nEmail - " + request.user.email + "\nPhone Number - " +
                                 str(request.user.phone_number), 'to_email': user.email}
                 EmailSend.send_email(data)
-            except:
+            except user.DoesNotExist:
                 return Response({'msg': NOT_REGISTERED}, status=status.HTTP_404_NOT_FOUND)
             all_favourites = Favourites.objects.get(house=house_obj)
             serializer = FavouritesSerializer(all_favourites, many=False)
@@ -567,7 +570,8 @@ class TrendingHousesView(generics.GenericAPIView, mixins.ListModelMixin):
         trending_houses_dict = {}
         rec = Likes.objects.all()
         for i in rec:
-            get_trendy_houses = LikesUser.objects.filter(likes=i.id).annotate(liked_houses=Count('likes')).order_by('liked_houses')
+            get_trendy_houses = LikesUser.objects.filter(likes=i.id).annotate(liked_houses=Count('likes')).order_by(
+                'liked_houses')
             trending_houses_dict[i.house.id] = len(get_trendy_houses)
         trendy_houses = dict(sorted(trending_houses_dict.items(), key=lambda item: item[1], reverse=True)).keys()
         trending_houses_list = list(trendy_houses)

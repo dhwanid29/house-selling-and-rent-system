@@ -2,19 +2,19 @@
 import json
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
-from django.db.models import Q
 from accounts.models import User
 from chat.models import Message
 
 
 class ChatConsumer(WebsocketConsumer):
-
+    # save message in database
     def message_save(self, message, sender, receiver):
         sender_user = User.objects.get(id=sender)
         receiver_user = User.objects.get(id=receiver)
         msg = Message.objects.create(sender=sender_user, receiver=receiver_user, message=message)
         msg.save()
 
+    # Connection with websocket to send and receive msgs
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name

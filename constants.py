@@ -81,3 +81,8 @@ AMENITIES_CREATED = "Added Successfully"
 AMENITIES_UPDATED = "Updated Successfully"
 AMENITIES_DELETE = "Deleted Successfully"
 AMENITIES_VIEW = "Retreived Successfully"
+
+
+# CHAT VIEWS
+
+CANNOT_CHAT_WITH_YOURSELF = "You cannot chat with yourself."
