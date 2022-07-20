@@ -83,7 +83,7 @@ class ResendEmailUpdateLinkSerializer(serializers.ModelSerializer):
             }
             EmailSend.send_email(data)
             return attrs
-        except user.DoesNotExist:
+        except:
             raise ValidationError(NOT_REGISTERED)
 
 

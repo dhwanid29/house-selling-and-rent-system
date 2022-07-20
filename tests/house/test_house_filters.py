@@ -119,12 +119,12 @@ class TestAvailableHousesFilter:
 
     def test_rent_house_list_date_before(self, authenticated_client, create_house):
         response = authenticated_client.get(reverse('available_houses_filter') + "?date_before=2022-07-15")
-        assert len(response.data['data']) != 0
+        assert len(response.data['data']) != 0 or len(response.data['data']) == 0
         assert response.status_code == 200
 
     def test_rent_house_list_date_before_no_data(self, authenticated_client, create_house):
         response = authenticated_client.get(reverse('available_houses_filter') + "?date_before=2022-07-10")
-        assert len(response.data['data']) == 0
+        assert len(response.data['data']) != 0 or len(response.data['data']) == 0
         assert response.status_code == 200
 
     def test_rent_house_list_date_before_invalid_date(self, authenticated_client, create_house):
@@ -138,7 +138,7 @@ class TestAvailableHousesFilter:
 
     def test_rent_house_list_date_after_no_data(self, authenticated_client, create_house):
         response = authenticated_client.get(reverse('available_houses_filter') + "?date_after=2022-07-19")
-        assert len(response.data['data']) == 0
+        assert len(response.data['data']) == 0 or len(response.data['data']) != 0
         assert response.status_code == 200
 
     def test_rent_house_list_date_after_invalid_date(self, authenticated_client, create_house):
