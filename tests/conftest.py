@@ -91,20 +91,20 @@ def create_house(authenticated_client):
     amenities_add.save()
     get_amenities = Amenities.objects.filter(name="Garden").first()
     house, created = House.objects.get_or_create(
-            residence_name = "shayona green",
-            price = "20000",
-            no_of_bedrooms = "3",
-            no_of_lift = "2",
-            no_of_floors = "5",
-            no_of_building = "13",
-            state = "gujarat",
-            city = "ahmedabad",
-            sqft = "1500",
-            possession = "Within 6 months",
-            selling_choice = "Sell",
-            address = "gota",
-            project_status = "Constructed",
-            user = instance
+        residence_name="shayona green",
+        price="20000",
+        no_of_bedrooms="3",
+        no_of_lift="2",
+        no_of_floors="5",
+        no_of_building="13",
+        state="gujarat",
+        city="ahmedabad",
+        sqft="1500",
+        possession="Within 6 months",
+        selling_choice="Sell",
+        address="gota",
+        project_status="Constructed",
+        user=instance
     )
     if created:
         house.amenities.add(get_amenities.id)
@@ -127,20 +127,20 @@ def create_house_rent(authenticated_client):
     amenities_add.save()
     get_amenities = Amenities.objects.filter(name="Garden").last()
     house, created = House.objects.get_or_create(
-            residence_name = "shayona green",
-            price = "22498",
-            no_of_bedrooms = "3",
-            no_of_lift = "2",
-            no_of_floors = "5",
-            no_of_building = "13",
-            state = "gujarat",
-            city = "ahmedabad",
-            sqft = "1500",
-            possession = "Within 6 months",
-            selling_choice = "Rent",
-            address = "gota",
-            project_status = "Constructed",
-            user = instance
+        residence_name="shayona green",
+        price="22498",
+        no_of_bedrooms="3",
+        no_of_lift="2",
+        no_of_floors="5",
+        no_of_building="13",
+        state="gujarat",
+        city="ahmedabad",
+        sqft="1500",
+        possession="Within 6 months",
+        selling_choice="Rent",
+        address="gota",
+        project_status="Constructed",
+        user=instance
     )
     if created:
         house.amenities.add(get_amenities.id)
@@ -160,12 +160,12 @@ def create_house_review(authenticated_client, create_house):
     """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
-    get_house =  pytest.house_id
+    get_house = pytest.house_id
     house_instance = House.objects.get(id=get_house)
     house_review, created = HouseReview.objects.get_or_create(
-            house = house_instance,
-            review = "good",
-            user = instance
+        house=house_instance,
+        review="good",
+        user=instance
     )
     house_review.save()
     get_house_review = HouseReview.objects.first()
@@ -183,8 +183,8 @@ def create_site_review(authenticated_client):
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     site_review, created = SiteReview.objects.get_or_create(
-            review = "good",
-            user = instance
+        review="good",
+        user=instance
     )
     site_review.save()
     get_site_review = SiteReview.objects.first()
@@ -238,12 +238,12 @@ def create_preference(authenticated_client):
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
     preference, created = Preference.objects.get_or_create(
-            residence_name = "shayona green",
-            no_of_bedrooms = "2",
-            state = "gujarat",
-            city = "ahmedabad",
-            selling_choice = "Sell",
-            user = instance
+        residence_name="shayona green",
+        no_of_bedrooms="2",
+        state="gujarat",
+        city="ahmedabad",
+        selling_choice="Sell",
+        user=instance
     )
     preference.save()
     get_preference = Preference.objects.first()
@@ -261,14 +261,14 @@ def create_house_images(authenticated_client, create_house):
     """
     user_instance = pytest.user_id
     instance = User.objects.get(id=user_instance)
-    get_house =  pytest.house_id
+    get_house = pytest.house_id
     house_instance = House.objects.get(id=get_house)
     image_data = File(open('media/default.jpg', 'rb'))
     image = SimpleUploadedFile('image.jpg', image_data.read(), content_type='multipart/form-data')
     house_image, created = HouseImages.objects.get_or_create(
-            house = house_instance,
-            house_image = image,
-            user = instance
+        house=house_instance,
+        house_image=image,
+        user=instance
     )
     house_image.save()
     get_house_image = HouseImages.objects.first()
@@ -287,5 +287,3 @@ def user_token(create_user):
     if user_email:
         pytest.uid = urlsafe_base64_encode(force_bytes(str(user_email.id)))
         pytest.token = default_token_generator.make_token(user_email)
-
-
